@@ -1,20 +1,68 @@
 ---
-title: "Introduction"
-description: "Welcome to your project"
+title: "Bunnita: Recursive AI Prompt Architecture"
+sidebarTitle: "Home"
+description: "Bunnita transforms frontier AI models into self-improving reasoning systems through structured XML architecture, committee governance, and persistent cloud memory."
 ---
 
-Write a short description of your product here. What it does, who it's for, and what they can accomplish with it.
+Bunnita is a recursive prompt engineering framework that treats your system prompt as a living operating system. Through structured XML section boundaries, a six-agent governance committee, and a mem0-powered cloud memory graph, Bunnita continuously evolves your AI interactions — every session feeds metadata back into the next build, closing a loop that makes each iteration smarter than the last.
 
-<Tip>
-  Ready to make this your own? Start by editing this page. Update your `docs.json` file to customize your site. Then fill out the [Quickstart](/quickstart) page.
-</Tip>
+<CardGroup cols={2}>
+  <Card title="Introduction" icon="book-open" href="/introduction">
+    Understand what Bunnita is, why it exists, and how the meta-recurrent loop works.
+  </Card>
+  <Card title="Quickstart" icon="rocket" href="/quickstart">
+    Adopt the v1.7 build, declare your runtime, and run your first Bunnita session.
+  </Card>
+  <Card title="Architecture" icon="sitemap" href="/architecture/xml-structure">
+    Explore the seven XML sections, memory graph, extension system, and permission model.
+  </Card>
+  <Card title="Extensions" icon="puzzle-piece" href="/extensions/overview">
+    Load capabilities on-demand with Bunnita's seven active prompt extensions.
+  </Card>
+  <Card title="The Committee" icon="users" href="/committee/overview">
+    Meet the six specialized agents who govern every architectural decision.
+  </Card>
+  <Card title="Working With Bunnita" icon="wrench" href="/guides/session-lifecycle">
+    Session lifecycle, model routing, FRONTIER mode, and the build workflow.
+  </Card>
+</CardGroup>
 
-<Card title="Quickstart" icon="rocket" href="/quickstart">
-  This card links to the quickstart page in your project.
-</Card>
-<Card title="Components" icon="puzzle-piece" href="https://mintlify.com/docs/components">
-  Add cards, callouts, steps, tabs, and more to design and structure your pages.
-</Card>
-<Card title="Settings" icon="gear" href="https://mintlify.com/docs/organize/settings">
-  Set your site name, branding, and navigation in the `docs.json` file.
-</Card>
+## How Bunnita Works
+
+Bunnita's core insight is that architecture — not raw model capability — is the bottleneck in most AI workflows. Rather than issuing a static system prompt, Bunnita gives the model a structured, owner-scoped operating environment that evolves with every session.
+
+<Steps>
+  <Step title="Adopt the Build">
+    Read `Builds/bunnita-system-prompt-v1-7.md` at session start. This 2,715-word core IS the operating system — every section maps to one committee member's domain.
+  </Step>
+  <Step title="Declare Your Runtime">
+    Emit a `<runtime>` tag specifying your active model, thinking mode, and effort level. This single declaration drives scaffold loading and effort calibration.
+  </Step>
+  <Step title="Extensions Load on Demand">
+    As your task unfolds, matching extensions activate automatically — bringing in capabilities like subagent coordination, advanced memory, or browser automation only when needed.
+  </Step>
+  <Step title="Memory Closes the Loop">
+    After each session, structured memories write back to the mem0 cloud graph. Future sessions retrieve these signals, so the system improves without manual tuning.
+  </Step>
+</Steps>
+
+## What Makes Bunnita Different
+
+<CardGroup cols={2}>
+  <Card title="Committee Governance" icon="scale-balanced">
+    Six specialized agents (Isabella, Daniel, Priya, Marcus, Søren, Renata) deliberate on every architectural change through an append-only governance journal.
+  </Card>
+  <Card title="XML Section Architecture" icon="code">
+    Twenty paired XML tags create clear attention boundaries the model can navigate. Each top-level section has a single accountable owner.
+  </Card>
+  <Card title="Persistent Memory Graph" icon="brain">
+    mem0-powered cloud memory transforms individual sessions into long-term optimization signals with full entity partitioning and four-identifier attribution.
+  </Card>
+  <Card title="Capability-Native Core" icon="bolt">
+    The 2,715-word v1.7 core assumes a capable reasoning substrate. Scaffolding relocates to the `capability-scaffold` extension for lighter model tiers.
+  </Card>
+</CardGroup>
+
+<Note>
+  Bunnita v1.7 is the current frozen build. It targets **Claude Opus 5** as the assumed execution tier and **Claude Sonnet 5** for light verification. Use [FRONTIER mode](/guides/frontier-mode) to test newer models not yet on the ratified list.
+</Note>

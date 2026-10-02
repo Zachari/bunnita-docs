@@ -1,0 +1,109 @@
+---
+title: 'Bunnita Committee Deliberation Protocol'
+sidebarTitle: 'Deliberation'
+description: 'Learn how the committee structures deliberation rounds, counts votes, handles splits, and gates every build through the Document-Truth Audit.'
+---
+
+A deliberation round is not a summary of what the committee decided. It is a structured record of *how* the committee reached its conclusion — every position stated, every pitch made, every rebuttal issued, and every vote cast. The protocol exists to make the reasoning behind every architectural decision auditable, not just the outcome.
+
+## What Full Documentation Means
+
+Every round records all six members' views in full. The documentation rule is strict:
+
+- Every pitch is recorded, attributed to the member who made it, in their own voice
+- Every rebuttal is recorded with equal attribution and fidelity
+- Where a member's position changed during the round, the change and its cause are recorded explicitly
+- Concessions and withdrawn arguments are treated as the highest-value content a round produces — they mark where reasoning genuinely moved, which is where the architecture learned something
+
+There is no summarization. A round that compresses "Isabella argued for stricter permission tiers" into a bullet has lost the architectural reasoning that made the argument worth recording. The full text is the record.
+
+## Vote Arithmetic
+
+The committee has six voting members. Votes are called after positions are fully stated and rebuttals are complete.
+
+| Outcome | Result | Requirement |
+|---------|--------|-------------|
+| **6–0** unanimous | Carries | Full agreement noted in record |
+| **5–1** majority | Carries | Dissenting position recorded in full |
+| **4–2** majority | Carries | Both dissenting positions recorded in full |
+| **3–3** split | Does **not** carry | Both sides compiled as steel-manned brief; escalated to Zachari |
+
+A 3–3 split is not a failure state — it is a signal that the decision requires architectural authority that the committee is not structured to resolve alone. Both sides of the split receive equal steel-manning treatment before the brief goes to Zachari.
+
+<Note>
+  A unanimous 6–0 vote is not self-executing. Regardless of the vote result, Zachari's explicit approval is always required before a selection becomes the focus of the next build. A carried vote makes a selection *eligible*; it does not scope it.
+</Note>
+
+## From Vote to Build Focus
+
+The distinction between *eligible* and *scoped* is load-bearing in the governance model.
+
+1. **Deliberation round concludes** — all positions recorded, vote called
+2. **Vote carries** (or Zachari resolves a split) — selection becomes eligible
+3. **Zachari reviews** the full deliberation record, not just the vote result
+4. **Zachari approves** — the selection is assigned as the focus of the next build cycle
+5. **Build begins** — subagents are dispatched with the adoption preamble pasted verbatim from `Subagents/subagent-adoption-preamble.md`
+
+No step in this chain is optional. A 6–0 vote with no Zachari approval produces no build.
+
+## Round Structure
+
+Each round in the governance journal follows a consistent structure. Use this as a reference when reading or contributing to the record.
+
+```
+Round [N] — [Topic or Decision Under Deliberation]
+
+Context
+  Brief framing of what triggered the round and what is being decided.
+
+Member Positions
+  [Member Name] — [Initial Position]
+    Full statement of their position, in their own voice.
+  [Member Name] — [Initial Position]
+    ...
+
+Pitches
+  [Member Name]
+    Full pitch for their preferred resolution, attributed.
+
+Rebuttals
+  [Member Name] → [Member Name]
+    Full rebuttal, attributed to both the speaker and the target.
+
+Position Changes
+  [Member Name] — changed from [X] to [Y]
+    Cause of the change recorded explicitly.
+
+Concessions and Withdrawn Arguments
+  [Member Name] — withdrew [argument]
+    What changed their reasoning.
+
+Vote
+  [Member]: [Position]
+  [Member]: [Position]
+  ...
+  Result: [6–0 / 5–1 / 4–2 / 3–3 escalated]
+
+Dissent Record (if applicable)
+  Full dissenting position(s), attributed.
+
+Zachari's Decision (after review)
+  [Approved / Modified / Deferred] — with rationale.
+```
+
+## The Append-Only Journal
+
+The full deliberation record lives at `Subagents/committee-deliberation.md`. The journal spans 38+ rounds and covers every major architectural decision in the framework's history, including the v1.6 expansion that added Søren Aalto and Renata Ferreira.
+
+The journal is **append-only**. No round is ever edited, redacted, or removed. The value of the record comes from its completeness — a decision made in Round 12 that was revisited in Round 31 is only intelligible if Round 12's full reasoning is still present.
+
+## The Document-Truth Audit
+
+Every build cycle is gated by the Document-Truth Audit, a four-part consistency check that Renata Ferreira oversees as part of the integration verification mandate. The audit verifies that all operative documents agree on:
+
+1. **Counts** — member counts, rule counts, tier counts, and any other enumerated quantities match across all documents
+2. **Rules** — every rule stated in one document appears with equivalent meaning in every document that references it
+3. **Capability labels** — labels used to describe model capabilities are consistent and do not drift between documents
+4. **Declared target models** — the models a build targets are declared identically across all operative documents
+
+A build that fails any of the four checks does not proceed. The audit is not a post-build review — it is a pre-build gate. Discrepancies surface before code ships, not after.

@@ -1,0 +1,41 @@
+---
+title: 'browser-automation: Web Interaction for Bunnita'
+sidebarTitle: 'browser-automation'
+description: 'browser-automation enables structured web interaction guidance in Bunnita when the host supplies browser tools like Playwright or Puppeteer.'
+---
+
+When your host environment exposes browser tools and a task involves interacting with the web, `browser-automation` loads to provide structured guidance for those interactions. It layers Bunnita's web automation protocol on top of whatever browser tool bindings your host supplies — giving you a consistent, principled approach to navigation, extraction, and form interaction regardless of which underlying tool is in play.
+
+## At a Glance
+
+| Property | Value |
+|---|---|
+| **Domain** | Tools |
+| **Critical** | No |
+
+## Activation Triggers
+
+`browser-automation` loads when **both** of the following conditions are true:
+
+1. **The host provides browser tools** — Playwright, Puppeteer, or a comparable web automation binding is available in the current environment
+2. **The task involves web interaction** — the session requires navigating URLs, extracting page content, submitting forms, or otherwise operating a browser programmatically
+
+If the host does not expose browser tools, this extension does not load — there is nothing to layer the protocol onto.
+
+## What browser-automation Provides
+
+When active, this extension adds structured web automation guidance to the session:
+
+- **Navigation protocol** — how to sequence page loads, wait for content readiness, and handle redirects reliably
+- **Content extraction** — structured approaches to identifying and pulling the data you need from a page without brittle selector chains
+- **Form interaction** — guidance for filling, validating, and submitting forms, including handling dynamic fields and multi-step flows
+- **Error handling** — what to do when a page load fails, a selector doesn't match, or an interaction produces an unexpected state
+- **Session and auth management** — how to carry authentication state across requests without leaking credentials into logs or memory
+
+## The Protocol vs. The Tooling
+
+This extension provides the **protocol** — the structured guidance for how to approach browser-based tasks. It does not supply the browser itself.
+
+<Note>
+**The host must supply the actual browser tool bindings.** `browser-automation` tells Bunnita *how* to interact with a browser; your host environment provides the Playwright, Puppeteer, or equivalent tools that make that interaction possible. If those bindings are absent, the extension has nothing to operate on.
+</Note>

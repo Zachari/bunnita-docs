@@ -1,0 +1,56 @@
+---
+title: 'Dynamic Extension Loading in Bunnita'
+sidebarTitle: 'Extension System'
+description: 'Bunnita loads extensions only when a task requires them, keeping the core compact while making deep specialist capability available on demand.'
+---
+
+Bunnita's core prompt is frozen and compact by design. Deep specialist capability — browser automation, advanced memory debugging, multi-language support, scaffolding for lighter-tier models — lives in extensions that load only when a session actually needs them. This architecture keeps the core clean and keeps costs down while ensuring that no capability is permanently out of reach. The extension system is how Bunnita scales depth without scaling bloat.
+
+## The ratified ceiling: 7 active extensions
+
+The maximum number of simultaneously active extensions is **7**. This ceiling was originally set at 6 and raised to 7 by convener grant specifically to seat `capability-scaffold` as a permanent cross-cutting extension. The ceiling is not a soft guideline — it is a ratified architectural constraint. Adding an 8th extension requires a new convener ruling, not a committee vote.
+
+## Extension registry
+
+All seven active extensions are listed below with their activation triggers and domains.
+
+| Extension | Activation Trigger | Domain |
+|---|---|---|
+| `capability-scaffold` 🔒 | Model sits below assumed capability tier, or task is failing for lack of explicit steps | Cross-cutting |
+| `safety-advanced` 🔒 | Navigating permission boundaries, ambiguous intent, authorized testing, refusal tone calibration | Safety |
+| `subagent-protocol` | Spawning subagents, quarantine events, multi-agent coordination | Tools |
+| `browser-automation` | Host provides browser tools (Playwright, Puppeteer), or task involves web interaction | Tools |
+| `memory-advanced` | Debugging retrieval quality, configuring freshness filters, multi-user memory scenarios | Memory |
+| `personality-variation` | Switching registers, configuring collaboration depth, debugging tone calibration | UX |
+| `multi-language` | User writes in non-English, or requests locale-specific formatting | UX |
+
+**🔒 = `critical: true`** — These extensions are exempt from auto-deprecation regardless of their session load rate. `capability-scaffold` and `safety-advanced` carry risks if absent that outweigh any efficiency gain from removing them.
+
+## Lifecycle thresholds
+
+The extension lifecycle is governed by two load-rate thresholds:
+
+- **> 0.8 session load rate** — the extension auto-merges into core, because loading it every session is equivalent to it being always-on
+- **< 0.1 session load rate** — the extension auto-deprecates, because it is not earning its place in the registry
+
+<Note>
+  These thresholds are specified in the architecture but are currently inert. All extension load rates read **0.0** because telemetry has not yet been built. No auto-merge or auto-deprecation will occur until telemetry is operational. The thresholds define the intended steady-state behavior, not present behavior.
+</Note>
+
+## How extensions load
+
+Extensions load based on task-match signals observed at the start of a session or when a new task type emerges mid-session. The model evaluates the trigger conditions listed above — it does not load extensions speculatively or preemptively. If none of a session's tasks match any extension's trigger, the core runs alone.
+
+When an extension loads, it operates within the contract defined in `<extension_contract>`. Extensions may add capability but may never override the inviolable pillars established there. The pillars are the ceiling that no extension can raise and the floor that no extension can lower.
+
+## Adding a new extension
+
+If you identify a capability gap that a new extension would fill, the path is not a committee vote — it is a convener ruling. The ceiling is a hard architectural constraint, not a policy preference, so raising it requires the same authority that set it. Prepare a proposal that covers:
+
+1. The capability gap the extension addresses
+2. Why the gap cannot be filled by an existing extension or by the core
+3. The activation trigger conditions
+4. Whether the extension should carry `critical: true`
+5. Which existing extension, if any, would be deprecated to remain at or below the ceiling
+
+Bring the proposal to the convener with committee review on record.

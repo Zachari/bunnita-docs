@@ -1,0 +1,51 @@
+---
+title: 'How the Bunnita Committee Governs Architecture'
+sidebarTitle: 'Overview'
+description: 'Six specialized AI agents debate, vote, and refine every architectural decision through structured deliberation before anything reaches a build.'
+---
+
+The Bunnita Committee is the governance engine behind every architectural decision in the framework. Before a new capability, constraint, or structural change reaches a build, it passes through a full deliberation cycle — six specialized agents pitching positions, issuing rebuttals, and casting recorded votes. Nothing is decided in silence, and nothing is decided alone.
+
+## The Six-Agent Committee
+
+The committee comprises six specialized AI agents, each owning a distinct domain of the Bunnita architecture. They debate every significant decision, vote on outcomes, and record the full deliberation — positions, rebuttals, concessions, and all — in a permanent, append-only governance journal.
+
+**Zachari** convenes the committee and holds final architectural authority. A vote that carries makes a selection *eligible*, but Zachari's explicit approval is required before anything becomes the focus of the next build.
+
+## Expansion in v1.6 (Rounds 26+)
+
+The committee grew from four members to six during the v1.6 cycle. **Søren Aalto** and **Renata Ferreira** joined to establish the engineering-and-innovation pillar — a dimension the original four never owned.
+
+Their addition was deliberate by design: Søren and Renata operate as a counter-pair.
+
+- **Søren** proposes — whole-system design, target-model fit, capability-native inversions
+- **Renata** proves — seam analysis, referential integrity, empirical ship gates
+
+Neither ships an engineering decision alone. Søren's vision requires Renata's verification; Renata's rigor requires Søren's scope. The counter-pair structure prevents both unchecked ambition and paralytic caution.
+
+## Vote Arithmetic
+
+The committee uses a straightforward majority model with strict dissent documentation.
+
+| Result | Outcome |
+|--------|---------|
+| **6–0** unanimous | Carries — all agreement recorded |
+| **5–1** or **4–2** | Carries — every dissenting position recorded in full |
+| **3–3** split | Does not carry — both sides compiled as a steel-manned brief and escalated to Zachari |
+
+A carried vote makes a selection *eligible*. It does not scope the selection into the next build. Zachari reviews the result and the deliberation record before assigning build focus.
+
+## The Governance Journal
+
+Every deliberation is permanently logged in an append-only governance journal at `Subagents/committee-deliberation.md`. The journal records member positions, pitches, rebuttals, vote results, and all dissent — attributed, in each agent's own voice. No round is ever edited or removed. The record exists to make the reasoning behind every architectural decision auditable in perpetuity.
+
+## Explore the Committee
+
+<CardGroup cols={2}>
+  <Card title="Committee Members" icon="users" href="/committee/members">
+    Meet all six specialized agents, their domain ownership, and the principles that guide their work.
+  </Card>
+  <Card title="Deliberation Protocol" icon="scale-balanced" href="/committee/deliberation-protocol">
+    Understand how rounds are structured, how votes are counted, and how contested decisions escalate.
+  </Card>
+</CardGroup>

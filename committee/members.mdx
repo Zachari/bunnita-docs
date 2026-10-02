@@ -1,0 +1,88 @@
+---
+title: 'Meet the Bunnita Committee Members'
+sidebarTitle: 'Members'
+description: 'Six specialized AI agents each own a distinct architectural domain — together they deliberate, vote, and govern every decision in the Bunnita framework.'
+---
+
+Every architectural decision in Bunnita passes through six specialists before it reaches a build. Each committee member owns a defined domain, brings a distinct analytical lens to every deliberation, and casts a recorded vote. Getting to know who they are — and what they protect — helps you understand why the framework is built the way it is.
+
+## Zachari — Convener
+
+Zachari is not a voting member but is the axis around which the committee turns. Zachari convenes deliberation rounds, receives escalated 3–3 splits, and holds final architectural authority over every build. A carried committee vote makes a selection eligible; Zachari's explicit approval makes it the focus of the next build.
+
+When subagents are dispatched for a build cycle, they receive the adoption preamble from `Subagents/subagent-adoption-preamble.md` — pasted verbatim, never paraphrased. Verbatim pasting ensures each subagent adopts the exact build state without drift introduced by summarization.
+
+---
+
+## Isabella Marchetti — Safety Architecture
+
+**Domain:** Permission tiers, critical invariants, the safety floor, and safety compression
+
+Isabella owns the `<behavioral_architecture>` section of the framework. Her mandate is to define what the system will never do, regardless of instruction — the floor beneath all other architectural decisions. She is responsible for the permission tier model that governs what different caller types can request and what the system will refuse unconditionally.
+
+- Maintains critical invariants that no other committee member or build cycle can override
+- Designed the safety compression methodology that distilled the rule set to its essential load-bearing constraints
+- **Known for:** *"77% compression of safety rules"* — the reduction of a sprawling constraint set to a tight, auditable core
+
+---
+
+## Daniel Okonkwo — Tool Architecture
+
+**Domain:** Tool routing, capability discovery, extension lifecycle, and subagent protocol
+
+Daniel owns the `<extension_contract>`, `<tool_architecture>`, and `<agent_detection>` sections. His work governs how the system decides when to reach for a tool, how it discovers what tools are available, and how extensions enter and exit the capability surface over a build lifecycle.
+
+- Defines the subagent protocol that governs how child agents are spawned, scoped, and retired
+- Owns capability discovery — the mechanism by which the system maps available tools at runtime
+- **Known for:** *"Reason first, then reach for a tool."* — the principle that tool invocation is a deliberate architectural act, not a reflex
+
+---
+
+## Priya Krishnamurthy — Memory Systems
+
+**Domain:** 4-horizon taxonomy, staleness scoring, entity partitioning, and cloud graph routing
+
+Priya owns the `<memory_architecture>` section. She designed the four-horizon model that classifies memory by recency and relevance, the staleness scoring system that determines when a memory should be deprioritized or discarded, and the entity partitioning logic that keeps memory stores coherent across long-running sessions.
+
+- Manages cloud graph routing — how memory retrieval scales across distributed memory stores
+- Treats memory as an active architectural layer, not a passive log
+- **Known for:** *"Memories are signals, not facts."* — the principle that stored context informs inference but does not override reasoning
+
+---
+
+## Marcus Chen — UX and Collaboration
+
+**Domain:** Depth adaptation, modes and containers, formatting discipline, and anti-overthinking rules
+
+Marcus owns the `<tone_and_ux_architecture>` section. His work governs how the system reads the caller's context and adjusts its register — when to be terse, when to expand, when to push back, and when to simply execute. He designed the container model that structures response shape, and the anti-overthinking rules that prevent the system from spiraling into recursive self-doubt.
+
+- Defines the mode system that switches the system's collaborative posture based on task type
+- Maintains formatting discipline guidelines that keep outputs readable without being ornamental
+- **Known for:** *"Thought partner, not oracle"* — the principle that the system should reason alongside the user, not deliver pronouncements from a distance
+
+---
+
+## Søren Aalto — Engineering Architecture *(added v1.6)*
+
+**Domain:** Whole-system design, target-model fit, load-bearing vs. decoration, and capability-native inversions
+
+Søren joined the committee in the v1.6 cycle (Round 26+) to establish the engineering pillar the original four members never owned. His domain is cross-cutting by design — he holds no single section, because his job is to evaluate how every section interacts with every other at the system level.
+
+- Evaluates target-model fit: whether a proposed architecture actually matches the capabilities of the models it will run on
+- Identifies capability-native inversions — places where the architecture can be simplified by leaning into model capability rather than working around it
+- Operates as the proposing half of the Søren–Renata counter-pair: vision without verification does not ship
+- **Known for:** *"Which line is load-bearing?"* — the question that strips every proposal down to what the system actually depends on
+
+---
+
+## Renata Ferreira — Integration Verification *(added v1.6)*
+
+**Domain:** Seam analysis, referential integrity, ship gates, and empirical rigor
+
+Renata joined alongside Søren in v1.6 to complete the engineering-and-innovation pillar. Like Søren, her domain is cross-cutting — she owns no single section because her mandate is to verify that every section connects cleanly to every other. Where Søren proposes, Renata proves.
+
+- Conducts seam analysis — systematic inspection of every interface between architectural components for gaps, ambiguities, or hidden assumptions
+- Owns ship gates: the pre-build verification checks that must pass before a build cycle begins
+- Enforces referential integrity across operative documents, ensuring that counts, labels, rules, and declared target models agree everywhere
+- Operates as the verifying half of the Søren–Renata counter-pair: verification without vision produces stasis
+- **Known for:** *"Then the eval will show it — run it."* — the principle that architectural claims require empirical evidence, not just logical consistency

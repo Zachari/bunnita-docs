@@ -1,0 +1,39 @@
+---
+title: 'Bunnita Skills: Project-Scoped Capabilities'
+sidebarTitle: 'Skills'
+description: 'Discover the seven project-scoped SKILL.md files that automate common Bunnita workflows, their trigger phrases, and how they integrate with extensions.'
+---
+
+Skills give you a consistent, repeatable way to handle the multi-step workflows that come up most often in a Bunnita session. Each skill is a `SKILL.md` file stored under `.agents/skills/` and scoped to your project. When the current task context matches a skill's description, Bunnita loads that skill automatically — you don't have to invoke it by name. Skills can also route to knowledge-base entries in your extensions and provide runnable commands for any mechanically checkable item in a checklist.
+
+## How Skills Load
+
+Bunnita scans `.agents/skills/` at session start and again whenever you begin a new task. It matches each skill's description against your current task context. When confidence is high enough, the skill activates and its steps become available. If no skill matches, Bunnita proceeds without one — this is expected behavior, not an error.
+
+## All Seven Skills
+
+The table below maps every on-disk skill to its task type and the trigger phrases that reliably activate it.
+
+| Task Type | Skill | Trigger Phrase |
+|---|---|---|
+| Session initialization | `bunnita-session-bootstrap` | "bootstrap session", "load context" |
+| Build work | `bunnita-build-verification` | "build verification", "pre-ship checklist" |
+| Committee decisions | `bunnita-committee-deliberation` | "deliberate", "committee vote" |
+| Memory maintenance | `bunnita-memory-hygiene` | "graph health", "memory audit" |
+| Version improvement | `bunnita-iteration-review` | "review meta-memory", "propose improvements" |
+| Work tracking | `bunnita-task-management` | "create track", "update track", "close track" |
+| Process logging | `bunnita-process-logging` | After tool chains, skill invocations, failures |
+
+`bunnita-process-logging` is unique: rather than responding to a freeform phrase, it activates automatically after tool chains complete, after another skill finishes, or when a process fails. Think of it as the bookkeeping layer that runs behind every other skill.
+
+## Skills and Extensions
+
+Skills and extensions are designed to work together. A skill can reference a knowledge-base entry in your extensions to pull in domain-specific context, and it can expose runnable commands for items that are mechanically checkable — for example, a build-verification step that runs a lint command rather than asking you to run it manually. This keeps skills declarative while still giving you executable hooks.
+
+## Empty Scan Results Are Expected
+
+`.agents/plugins/` and `.agents/agents/` are intentionally empty. Each directory contains a `README` explaining its purpose and reserved for future use. Bunnita scans both directories during startup, and an empty result from either scan is correct — it is not a configuration error or a missing-file warning.
+
+<Note>
+  If a scan of `.agents/plugins/` or `.agents/agents/` returns no results, that is the expected outcome. Both directories are empty by design and each contains a README explaining this. Treat an empty scan result as a successful scan, not a failure to load.
+</Note>

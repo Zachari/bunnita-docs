@@ -1,0 +1,82 @@
+---
+title: 'mem0 Memory Operations Quick Reference'
+sidebarTitle: 'Operations'
+description: 'Reference guide for mem0 add, search, list, and update operations with required identifiers, the deduplication rule, and golden backup recovery.'
+---
+
+Use this page as your go-to reference whenever you need to read from or write to the Bunnita memory graph. The four core mem0 operations — `add`, `search`, `list`, and `update` — cover every memory task you will encounter in a session. Get the identifiers right on every write, apply the deduplication rule before every `add`, and you will keep the memory graph clean and queryable across sessions.
+
+## The Four Operations at a Glance
+
+| Operation | Purpose |
+|---|---|
+| `add` | Write a new memory to the graph |
+| `search` | Query the graph by keyword, tag, or semantic similarity |
+| `list` | Retrieve all memories in a given scope |
+| `update` | Replace the content of an existing memory in place |
+
+## The Deduplication Rule
+
+Before you call `mem0 add`, search for semantically similar memories already in the graph. If any result comes back with a confidence score of **0.7 or higher**, call `mem0 update` on that existing memory instead of creating a new one. Writing a duplicate degrades search quality and makes the graph harder to audit.
+
+The rule in plain terms: **search first, add only if nothing similar exists**.
+
+## Operation Examples
+
+### add — Write a New Memory
+
+Use `add` when your deduplication search returns no results above the 0.7 threshold.
+
+```bash
+mem0 add "[process] bunnita-session-bootstrap loaded 5 memories, detected 7 skills" \
+  --user-id zachari \
+  --app-id bunnita \
+  --run-id mem0-run-MM-DD-YYYY
+```
+
+### search — Query by Tag (User Scope)
+
+Omit `--agent-id` to search only user-scoped memories such as taste and preference records.
+
+```bash
+mem0 search "[taste]" \
+  --user-id zachari \
+  --app-id bunnita \
+  --run-id mem0-run-MM-DD-YYYY
+```
+
+### search — Query by Tag (Agent Scope)
+
+Include `--agent-id` to narrow the search to a specific agent's memory graph.
+
+```bash
+mem0 search "[deliberation]" \
+  --user-id zachari \
+  --app-id bunnita \
+  --run-id mem0-run-MM-DD-YYYY \
+  --agent-id bunnita-v1
+```
+
+### add — Seed a Ship Decision
+
+Run this command whenever the committee ships a new build. Replace `X.Y` and the filename with the actual version.
+
+```bash
+mem0 add "[deliberation] vX.Y SHIPPED. Build at Builds/bunnita-system-prompt-vX-Y.md." \
+  --agent-id bunnita-v1 \
+  --user-id zachari \
+  --app-id bunnita \
+  --run-id mem0-run-MM-DD-YYYY
+```
+
+## Read vs. Write Scope
+
+Reads may use the minimum scope necessary for the query — omit `--agent-id` when you want user-scoped results, or supply a specific agent ID when you want that agent's graph. Writes are stricter: every `add` and every `update` must carry all four identifiers (`--app-id`, `--run-id`, `--user-id`, and `--agent-id` where applicable). There is no exception to this rule for writes.
+
+## Golden Backups
+
+The `mem0_backup/` directory holds golden backups of the memory graph. These backups exist for recovery reference — if a mis-scoped write or accidental deletion corrupts a partition, use the golden backup as your source of truth for restoring the correct state. Do not treat `mem0_backup/` as a working directory; read from it only during recovery.
+
+<Warning>
+  Every mem0 write — whether `add` or `update` — must include all four identifiers: `--app-id bunnita`, `--run-id mem0-run-MM-DD-YYYY`, `--user-id zachari`, and `--agent-id {agent_name}` (or omit `--agent-id` only for user-scoped writes). Missing any one of these on a write silently routes the memory to the wrong scope. Recovery requires a manual audit against `mem0_backup/` and there is no automatic rollback.
+</Warning>

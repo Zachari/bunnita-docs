@@ -1,0 +1,165 @@
+---
+title: 'Core Concepts Behind Bunnita'
+sidebarTitle: 'Core Concepts'
+description: 'Master the ten foundational ideas behind Bunnita — from the meta-recurrent loop and XML architecture to committee governance and model tier selection.'
+---
+
+Before you work deeply with Bunnita, it helps to understand the ten concepts that hold the framework together. These are not abstract principles — each one maps to a concrete mechanism in the build that you will interact with directly. Read through these once when you start, and return to them when something in the system behaves in a way you did not expect.
+
+<Info>
+  **Bunnita v1.7 is the current build and is frozen.** The concepts described on this page reflect the v1.7 architecture exactly as shipped. No changes are in flight. All proposed modifications queue for the next Committee deliberation cycle and will land in v1.8 when ratified.
+</Info>
+
+## The Meta-Recurrent Loop
+
+<Accordion title="What it is and why it matters">
+  The meta-recurrent loop is the engine that makes Bunnita self-improving over time. Every session you run produces structured metadata — behavioral signals, capability observations, UX friction, safety notes. That metadata flows into the mem0 knowledge graph, where the Committee retrieves and reviews it during deliberation. The Committee's findings drive targeted edits to the system prompt. Better prompts produce better sessions, which produce richer metadata, which drives better edits. The loop never closes.
+
+  The cycle looks like this:
+
+  **Session → Metadata Extraction → mem0 Knowledge Graph → Committee Deliberation → Prompt Evolution → Better Sessions → ∞**
+
+  This is what separates Bunnita from static prompt templates. A template is a snapshot. Bunnita is a trajectory.
+</Accordion>
+
+## The Build
+
+<Accordion title="The frozen system prompt file">
+  The build is the Bunnita system prompt file: `Builds/bunnita-system-prompt-v1-7.md`. It is 2,715 words long and is the authoritative artifact of the current architecture. You adopt it by reading it into context at the start of every session — in full, without truncation.
+
+  The build is frozen. "Frozen" means no edits are made to v1.7 outside of a formal Committee deliberation cycle. You run it exactly as shipped. If you notice a problem, log it in the memory graph with a `[feedback]` tag so the Committee can review it. Do not modify the file directly.
+
+  A new build version is produced only when the Committee ratifies a deliberation round. The version number increments at that point and the previous build is archived, not deleted.
+</Accordion>
+
+## XML Section Architecture
+
+<Accordion title="Seven sections, seven owners">
+  The system prompt is organized into seven top-level XML sections. Each section is owned by one Committee member, who is responsible for its coherence, scope, and evolution across build versions. The sections are:
+
+  | Section | Owner | Purpose |
+  |---|---|---|
+  | `<identity>` | Renata | Defines who Bunnita is and how it presents itself |
+  | `<behavioral_architecture>` | Søren | Controls reasoning modes, effort calibration, and thinking depth |
+  | `<extension_contract>` | Søren | Specifies how extensions load, gate, and interact |
+  | `<tool_architecture>` | Daniel | Governs tool selection, sequencing, and output handling |
+  | `<memory_architecture>` | Priya | Defines memory graph structure, write rules, and retrieval patterns |
+  | `<tone_and_ux_architecture>` | Marcus | Sets communication register, pacing, and friction reduction |
+  | `<agent_detection>` | Isabella | Manages capability scanning and agent context awareness |
+
+  The XML structure is not decorative — it is how the model parses ownership and responsibility boundaries within the build. Keeping each section clearly scoped prevents one concern from bleeding into another during prompt evolution.
+</Accordion>
+
+## Extensions
+
+<Accordion title="Modular capabilities that load on task match">
+  Extensions are modular capability files that live in `.agents/prompt-extensions/` and load into the active session when a task matches their trigger conditions. They are not part of the base build — they activate on demand, which keeps the base prompt lean and the session context focused.
+
+  Bunnita v1.7 has **7 active extensions**. The extension ceiling is ratified at 7 — adding an eighth extension requires a formal Committee vote. Two extensions hold **critical tier** status:
+
+  - **`capability-scaffold`** — Provides the L2 fallback scaffolding that activates on Haiku 4.5. It is also the foundation layer for capability detection across all tiers.
+  - **`safety-advanced`** — Enforces the independent safety floor. It activates regardless of other extension states and cannot be deactivated by task logic.
+
+  The remaining five extensions are standard tier and load based on task match signals declared in each extension's manifest.
+</Accordion>
+
+## The Committee
+
+<Accordion title="Six agents, one convener, structured deliberation">
+  The Committee is a governance body of six specialized agents who deliberate on every significant architectural decision. No single agent has unilateral authority over the build. Decisions emerge from structured deliberation rounds in which each agent contributes analysis from their domain.
+
+  The six Committee members are:
+
+  - **Isabella** — Safety. Owns `<agent_detection>` and the independent safety floor. Her vote is required to ratify any change that touches permission tiers or safety-critical extension behavior.
+  - **Daniel** — Tool architecture. Owns `<tool_architecture>` and governs how tools are selected and sequenced.
+  - **Priya** — Memory. Owns `<memory_architecture>` and defines how the knowledge graph is written, partitioned, and retrieved.
+  - **Marcus** — UX. Owns `<tone_and_ux_architecture>` and ensures the build produces communication that is clear, low-friction, and calibrated to context.
+  - **Søren** — Engineering. Owns `<behavioral_architecture>` and `<extension_contract>`. Focuses on the mechanical correctness of the build.
+  - **Renata** — Verification. Owns `<identity>` and serves as the final audit pass before any build version is ratified.
+
+  **Zachari** is the convener. Zachari does not hold a section, but chairs deliberation rounds, resolves deadlocks, and initiates build cycles. Zachari is the human owner of the Bunnita system.
+</Accordion>
+
+## Memory Graph
+
+<Accordion title="Persistent cross-session knowledge with entity partitioning">
+  The Bunnita memory graph is a mem0 cloud knowledge graph that stores everything worth carrying forward from one session to the next: taste profiles, capability signals, process patterns, safety observations, UX notes, and feedback for the Committee.
+
+  The graph uses **entity partitioning** to keep memories retrievable and context-safe. Every write must carry four identifiers:
+
+  ```bash
+  --app-id bunnita        # Always "bunnita" — scopes all writes to this system
+  --run-id mem0-run-MM-DD-YYYY   # The session date, formatted exactly
+  --user-id <your-user-id>       # Your personal identifier
+  --agent-id <agent-name>        # The agent writing the memory
+  ```
+
+  A write missing any of these four identifiers will not be correctly partitioned and will not surface in future retrievals. Think of the four identifiers as a composite key — all four must be present or the memory is effectively lost.
+</Accordion>
+
+## Model Tiers
+
+<Accordion title="Four ratified tiers plus FRONTIER mode">
+  Bunnita defines four ratified model tiers, each with a defined role in the system:
+
+  | Tier | Model | Role |
+  |---|---|---|
+  | **L2 Fallback Floor** | Haiku 4.5 | Minimum supported tier. `capability-scaffold` auto-loads. |
+  | **Light Verification** | Sonnet 5 | Fast, focused verification passes. Not for primary work. |
+  | **Assumed Tier** | Opus 5 | Default for all primary work. The tier the build is calibrated for. |
+  | **At-or-Above** | Fable 5, Fable 5.1 | Fully supported. May expose capabilities beyond the build's current scaffolding. |
+
+  FRONTIER mode sits outside the ratified tier table and is covered in its own concept below. Never run below the L2 floor — sessions on unratified models produce unpredictable behavior and their output should not feed the memory graph.
+</Accordion>
+
+## Permission Tiers
+
+<Accordion title="Three tiers and an independent safety floor">
+  Every action Bunnita can take falls into one of three permission tiers:
+
+  **Freely Available** — Actions the build performs without prompting you for confirmation. Routine reads, memory retrievals, capability scans, and standard task execution live here.
+
+  **Confirm First** — Actions that require explicit confirmation before proceeding. Writes to external systems, destructive operations, and anything that crosses a capability boundary are gated here. The build will pause and surface the action for your review.
+
+  **Never Perform** — A hard-coded list of actions the build will not take under any circumstances, regardless of instructions. This list is set by Isabella and is not overridable by runtime flags, user requests, or Committee deliberation.
+
+  Sitting beneath all three tiers is the **independent safety floor** — a set of constraints enforced by the `safety-advanced` extension that activate regardless of which permission tier an action nominally falls into. The safety floor cannot be disabled.
+</Accordion>
+
+## The Runtime Declaration
+
+<Accordion title="The tag that drives scaffold loading">
+  The runtime declaration is an XML tag you include at the start of every session, immediately after loading the build. It tells the scaffolding layer which model is active, how much thinking depth to apply, and what effort level to calibrate for:
+
+  ```xml
+  <runtime active_model="opus-5" thinking="adaptive" effort="high" />
+  ```
+
+  The three attributes are:
+
+  - **`active_model`** — The model tier identifier. Valid values: `opus-5`, `sonnet-5`, `fable-5`, `fable-5-1`, `haiku-4-5`, `frontier`.
+  - **`thinking`** — How the build applies reasoning depth. `adaptive` lets the build choose based on task complexity. `fixed` locks a consistent reasoning depth. `off` disables extended thinking.
+  - **`effort`** — Effort calibration. `high` for complex, consequential, or novel work. `standard` for routine tasks.
+
+  Getting the runtime declaration right matters. An incorrect `active_model` value will cause the wrong extensions to load and the wrong fallback behavior to activate. Always match `active_model` to the model you are actually running.
+</Accordion>
+
+## FRONTIER Mode
+
+<Accordion title="Experimental mode for unratified models">
+  FRONTIER mode is an experimental session configuration for testing models that fall outside the four ratified tiers. It exists because frontier models release faster than Committee deliberation cycles can ratify them, and having a defined experimental pathway is safer than running unratified models against the standard build with no scaffolding adjustments.
+
+  Activate FRONTIER mode by setting `active_model="frontier"` in your runtime declaration:
+
+  ```xml
+  <runtime active_model="frontier" thinking="adaptive" effort="high" />
+  ```
+
+  FRONTIER mode is **currently configured for Claude Opus 5.5**. When running in FRONTIER mode:
+
+  - Memory writes from the session are tagged with a `[frontier]` marker so Committee reviewers can identify them during deliberation
+  - Extension loading behavior may differ from the ratified tier table
+  - Session output should be treated as provisional — do not use FRONTIER sessions as the basis for architectural decisions without Committee review
+
+  FRONTIER mode is not for production use. It is a deliberate experiment pathway with defined guardrails.
+</Accordion>

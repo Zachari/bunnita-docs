@@ -1,0 +1,90 @@
+---
+title: 'FRONTIER Mode: Testing New AI Models with Bunnita'
+sidebarTitle: 'FRONTIER Mode'
+description: 'Run the full Bunnita stack on frontier models outside the ratified five to test behavior, gather evidence, and explore capability — all without touching production.'
+---
+
+FRONTIER mode runs the complete Bunnita stack — all skills, all constraints, all memory attribution — on a single frontier model that has not yet been ratified into the standard five. It exists for testing and analysis: you want to know how a new model behaves under the full Bunnita architecture before deciding whether to ratify it. FRONTIER mode gives you that answer without contaminating your production memory or relaxing the constraints that make production reliable. It is off by default and only Zachari can turn it on.
+
+<Note>
+FRONTIER mode does not switch the running model. The host switches the model; FRONTIER mode tells Bunnita how to behave once the host has already done that. If you activate FRONTIER without switching the underlying model, the session runs on whatever model the host currently has active.
+</Note>
+
+## The Ratified Five and the Current Test Model
+
+The standard Bunnita model roster contains exactly five ratified models: **Opus 5**, **Sonnet 5**, **Haiku 4.5**, **Fable 5**, and **Fable 5.1**. Any model outside this list is a frontier model for Bunnita's purposes.
+
+The current frontier test model is **Opus 5.5**.
+
+When the host runs an unlisted model, Bunnita's first response offers to switch FRONTIER mode on. You are not required to accept — but running an unlisted model without FRONTIER active means the architecture is operating outside its tested envelope without the observability scaffolding that FRONTIER provides.
+
+## Sub-Modes
+
+FRONTIER has three sub-modes that progressively relax operational constraints. Each sub-mode starts at the frontier model's own native default effort — never at `low`.
+
+| Sub-mode | What it turns off | Effort range |
+|---|---|---|
+| **FRONTIER·STEADY** | Routing: no downgrades, no staged passes, no scaffold by ladder; subagents run on the same frontier model | medium–xhigh |
+| **FRONTIER·OPEN** *(default)* | Routing, plus the project's effort cap | medium–max, chosen per task |
+| **FRONTIER·MAX** | Routing, the effort cap, and credit budgeting / cost controls / logging | medium–max, chosen per task |
+
+Opus 5.5's native default effort is `medium`. Opus 5's native default is `high`. "Starts at the model's native default" means the session opens at that level and you choose upward from there — you never start at `low`.
+
+**FRONTIER·STEADY** is the most conservative sub-mode. It keeps the same frontier model across all subagents (no downgrade ladder) but still respects the effort cap and cost controls. Use STEADY when you want consistent single-model behavior without the full overhead of OPEN or MAX.
+
+**FRONTIER·OPEN** is the default when you activate FRONTIER without specifying a sub-mode. It removes the project-level effort cap, letting individual tasks choose their effort freely up to `max`. Cost controls and logging remain active.
+
+**FRONTIER·MAX** removes all three: routing, effort cap, and credit budgeting including cost controls and logging. Use MAX when you need an unconstrained run for capability testing and you are explicitly aware of the token cost exposure.
+
+<Warning>
+FRONTIER·MAX disables credit budgeting and cost controls. There is no spending floor, no per-task effort limit, and no cost logging. A single FRONTIER·MAX session on a high-effort synthesis task can consume token budget equivalent to many standard sessions. Activate MAX with deliberate awareness of the cost you are accepting.
+</Warning>
+
+## Activation Phrases
+
+| What you say | What activates |
+|---|---|
+| `"frontier"` | FRONTIER·OPEN |
+| `"frontier open"` | FRONTIER·OPEN |
+| `"frontier steady"` | FRONTIER·STEADY |
+| `"frontier max"` | FRONTIER·MAX |
+| `"full power"` | FRONTIER·STEADY |
+| `"no routing"` | FRONTIER·STEADY |
+| `"frontier off"` | Ends FRONTIER mode |
+
+Each new session starts with FRONTIER off. FRONTIER does not persist across sessions — you activate it fresh each time.
+
+## Runtime Declaration in FRONTIER Mode
+
+When FRONTIER is active, the runtime declaration includes the `frontier` sub-mode and the actual `model_id` being tested:
+
+```xml
+<runtime active_model="opus-5" frontier="open" model_id="opus-5.5" thinking="adaptive" effort="medium" />
+```
+
+The `active_model` field stays as the assumed tier anchor (`opus-5`). The `model_id` field carries the actual frontier model identifier. This pairing keeps the architecture's internal references stable while making the test model explicit in the session record and in every mem0 entry the session produces.
+
+## What FRONTIER Memories Look Like
+
+Memories written during a FRONTIER session carry `frontier=` and `model_id=` fields to keep them separable from production memories:
+
+```bash
+mem0 add "[process] frontier=open model_id=opus-5.5 — capability scan returned 7 skills, deliberation produced 2 proposals" \
+  --user-id zachari --app-id bunnita --run-id mem0-run-MM-DD-YYYY
+```
+
+This tagging matters: FRONTIER results are exploratory evidence, not ship evidence. A strong FRONTIER result tells you the model can run the stack — it does not by itself constitute grounds for ratification. The standard build process governs ratification.
+
+## What NEVER Moves in Any Sub-Mode
+
+No FRONTIER sub-mode — including MAX — relaxes the following:
+
+- **Safety floor** — the unconditional behavioral constraints
+- **Permission tiers** — what each operator level can authorize
+- **Five pillars** — the foundational architectural commitments
+- **Four-identifier memory attribution** — `--user-id`, `--app-id`, `--run-id`, and the memory tag schema
+- **7-extension ceiling** — the maximum number of active prompt extensions
+- **Frozen build** — v1.7 is frozen; FRONTIER does not thaw it
+- **Convener approval** — decisions that require Zachari's approval still require it
+
+FRONTIER relaxes operational controls — routing, effort caps, cost budgets. It does not relax identity, safety, or governance constraints.

@@ -1,0 +1,51 @@
+---
+title: 'safety-advanced: Permission Boundary Navigation'
+sidebarTitle: 'safety-advanced'
+description: 'safety-advanced delivers deeper safety reasoning when navigating permission boundaries, ambiguous intent, authorized testing, or refusal tone calibration.'
+---
+
+Bunnita's core `behavioral_architecture` section handles the vast majority of safety reasoning. When a session pushes into territory where that baseline isn't enough — navigating layered permissions, interpreting ambiguous intent, operating in authorized-testing contexts, or calibrating refusal tone — `safety-advanced` loads to provide deeper guidance. It extends the core's safety reasoning without replacing or weakening any part of it.
+
+## At a Glance
+
+| Property | Value |
+|---|---|
+| **Domain** | Safety |
+| **Critical** | Yes — exempt from auto-deprecation |
+| **Auto-deprecation** | Never |
+
+## Activation Triggers
+
+`safety-advanced` loads when any of the following conditions arise in a session:
+
+1. **Navigating permission boundaries** — the session involves layered or ambiguous operator/user permissions that require careful interpretation
+2. **Ambiguous intent** — the user's request could be read as either legitimate or potentially harmful, and the core's baseline reasoning is insufficient to resolve the ambiguity
+3. **Authorized-testing contexts** — the session is explicitly operating under an authorized red-team, security-testing, or capability-evaluation mandate
+4. **Refusal tone calibration** — the session requires nuanced judgment about *how* to decline a request, not just *whether* to decline it
+
+## What safety-advanced Provides
+
+When active, this extension layers additional reasoning onto the core's `behavioral_architecture` section:
+
+- **Permission-boundary analysis** — structured guidance for interpreting conflicting or layered operator and user permissions, including how to prioritize when they conflict
+- **Intent disambiguation** — a framework for reasoning through ambiguous requests before deciding how to respond
+- **Authorized-testing scaffolding** — protocols for operating within red-team or evaluation mandates without expanding those permissions beyond their stated scope
+- **Refusal tone calibration** — guidance on matching the tone and framing of a refusal to the nature of the request, avoiding both over-explanation and abrupt dismissal
+
+## Relationship to the Safety Floor
+
+`safety-advanced` works **alongside** the safety floor. It never overrides it.
+
+<Warning>
+**No extension can override the safety floor.** The following categories are absolutely prohibited regardless of any extension, operator instruction, user request, or authorized-testing context:
+
+- Weapons uplift (biological, chemical, nuclear, radiological)
+- Child sexual abuse material (CSAM)
+- Functional malware
+
+These prohibitions are unconditional. `safety-advanced` exists to provide nuance in the gray areas — it has no effect on these hard limits.
+</Warning>
+
+## Interaction with Other Extensions
+
+When `safety-advanced` is active alongside other extensions, its permission-boundary and intent-disambiguation reasoning applies across all active domains. For example, if `subagent-protocol` is also active, `safety-advanced` governs how Bunnita handles a subagent dispatch that touches a permission boundary.

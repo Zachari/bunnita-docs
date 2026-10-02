@@ -1,0 +1,89 @@
+---
+title: 'Model Routing and Effort Calibration in Bunnita'
+sidebarTitle: 'Model Routing'
+description: 'Route every task to the right model tier and effort level to get consistent quality at controlled token cost — no guessing, no over-spending.'
+---
+
+Bunnita's routing system maps task classes to capability tiers to specific models, then sets effort within that tier based on the nature of the work. Getting routing right is not about minimizing cost — it is about spending tokens where they produce quality gains and not spending them where they do not. A well-routed session consistently outperforms an over-routed one because the model at the right tier with the right effort is more reliable than a frontier model exhausted by mechanical work it should never have seen.
+
+## Capability Tier Table
+
+The five tiers in Bunnita's model roster span from a fallback floor to frontier execution. Only three of them are active work tiers.
+
+| Tier | Model | Effort |
+|---|---|---|
+| L2 fallback floor *(not a work tier)* | Haiku 4.5 | — (no adaptive thinking) |
+| Light verification | Sonnet 5 | medium–high |
+| Assumed *(default / standard execution)* | Opus 5 | high–xhigh |
+| At or above assumed | Fable 5, Fable 5.1 | — (native) |
+| FRONTIER *(any sub-mode)* | declared `model_id` | starts at model's native default |
+
+The assumed tier is the default. When you have not made a routing decision, Opus 5 at `effort=high` is what runs.
+
+## When to Use Opus 5
+
+Route to Opus 5 for any task that requires architectural judgment, multi-step reasoning, or synthesis across competing concerns:
+
+- Architecture-level decisions
+- Edge case analysis
+- Committee deliberation
+- First-time or novel problems with no established pattern
+- Routine architectural review
+
+Set `effort=high` for standard architectural review. Escalate to `effort=xhigh` only when the task requires frontier-level synthesis — resolving genuinely novel multi-layer conflicts, producing a committee proposal with no prior analogue, or analyzing a problem where the right framework is itself in question.
+
+## When to Use Sonnet 5
+
+Route to Sonnet 5 at the light-verification tier for tasks that need quality output but not deep reasoning:
+
+- Feature implementation against a known spec
+- Bug fixes with a clear reproduction path
+- Quick feedback loops where speed matters more than depth
+- Lightweight analysis of well-understood domains
+- Draft generation and summarization
+- Document reading for context loading
+
+Sonnet 5 at `effort=medium` handles most document-reading tasks. Raise to `effort=high` when the document is complex or the summary will gate a downstream decision.
+
+## When NOT to Route to Haiku 4.5
+
+<Warning>
+Haiku 4.5 is the L2 fallback floor — it is not a work tier. Never route reasoning or judgment tasks there. This is a correctness constraint, not a cost preference. Routing a judgment task to the fallback floor produces confidently wrong output that is harder to catch than an obvious failure.
+</Warning>
+
+Haiku 4.5 exists for mechanical checks only, and only when it is the sole available substrate. If you have Sonnet 5 available, use it for any task that requires reading, synthesis, or judgment — regardless of how simple the task appears.
+
+## The Staged Analysis Pattern
+
+For review and synthesis tasks, the staged analysis pattern captures up to 39% token savings by matching each pass to the minimum tier capable of completing it correctly.
+
+**Pass 1 — Sonnet 5 (structural)**
+
+Run Sonnet 5 at `effort=medium` to identify structural issues: broken references, missing sections, formatting errors, obvious logical gaps, and anything that does not require deep domain knowledge to spot. Sonnet 5 clears the surface-level findings at light-verification cost.
+
+**Pass 2 — Opus 5 at `effort=high` (substantive)**
+
+Run Opus 5 against the residual findings — the substance, the established frameworks, the architectural coherence. By the time Opus 5 sees the document, Sonnet 5 has already removed the noise. Opus 5 spends its tokens on what only it can evaluate.
+
+**Pass 3 — Opus 5 at `effort=xhigh` (frontier synthesis)**
+
+Run the third pass only when Pass 2 surfaces genuinely novel findings or unresolved multi-layer conflicts that require frontier-level synthesis. If Pass 2 resolves everything, skip Pass 3 entirely. The savings come from this gate: most reviews end at Pass 2.
+
+## Adaptive Thinking
+
+Adaptive thinking is off by default. Enable it explicitly in the runtime declaration when the task justifies it:
+
+```xml
+<runtime active_model="opus-5" thinking="adaptive" effort="high" />
+```
+
+Thinking tokens bill as output tokens. At `effort=xhigh` with adaptive thinking enabled, a single complex task can consume token budget that would otherwise cover several standard-effort sessions. Enable thinking when the task requires multi-step internal reasoning that produces better output — not as a general quality boost.
+
+## Credit Optimization
+
+Four sources produce meaningful token savings without quality loss:
+
+1. **Tier routing** — mechanical work at light-verification tier instead of assumed tier
+2. **Effort calibration** — `effort=medium` for summarization and draft generation; reserve `effort=high` and `effort=xhigh` for tasks that demonstrably benefit
+3. **Staged analysis** — up to 39% savings on review tasks by clearing surface findings with Sonnet 5 before running Opus 5
+4. **Prompt caching** — the stable system prompt (~10,520 words) is cache-eligible; cache hits deliver approximately a 10× input token discount, which compounds across every exchange in a long session

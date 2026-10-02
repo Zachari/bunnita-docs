@@ -1,0 +1,43 @@
+---
+title: 'memory-advanced: Deep Memory Configuration'
+sidebarTitle: 'memory-advanced'
+description: 'memory-advanced helps you debug retrieval quality, configure freshness filters, and manage multi-user memory scenarios beyond the core memory operations.'
+---
+
+Bunnita's core `memory_architecture` section covers the everyday read and write operations you need for most sessions. When you're diagnosing why retrieval is returning stale or irrelevant results, setting up freshness filters for time-sensitive contexts, or managing memory across multiple users, `memory-advanced` loads to give you the deeper controls those situations require.
+
+## At a Glance
+
+| Property | Value |
+|---|---|
+| **Domain** | Memory |
+| **Critical** | No |
+
+## Activation Triggers
+
+`memory-advanced` loads when any of the following conditions arise:
+
+1. **Debugging retrieval quality** — results are stale, irrelevant, or inconsistently ranked and you need to diagnose why
+2. **Configuring freshness filters** — the session requires time-bounded retrieval where recency is a factor in what gets surfaced
+3. **Multi-user memory scenarios** — the session involves memory that must be scoped, partitioned, or shared across more than one user identity
+
+## What memory-advanced Provides
+
+When active, this extension layers deeper operations on top of the core's `memory_architecture` section:
+
+- **Retrieval diagnostics** — structured steps for isolating whether a retrieval problem is in the query, the index, the scoring, or the data itself
+- **Freshness filter configuration** — guidance for setting and tuning time-window parameters so retrieval respects recency constraints
+- **Multi-user scoping** — protocols for partitioning memory by user identity, managing shared memory namespaces, and preventing cross-user data leakage
+- **Write consistency checks** — verification steps to confirm that a memory write landed correctly before downstream operations depend on it
+
+## Canonical Specification
+
+All cloud memory operations — reads, writes, deletes, and administrative queries — are governed by `Subagents/mem0-interaction-standard.md`. That document is the authoritative spec. When `memory-advanced` provides guidance that touches cloud memory, it operates within the boundaries that spec defines.
+
+<Tip>
+**When to use `memory-advanced` vs. the core memory operations:**
+
+Use the **core** `memory_architecture` for routine reads and writes in a single-user session where retrieval quality is not in question.
+
+Load **`memory-advanced`** when you need to diagnose a retrieval problem, apply a freshness constraint, or manage memory across more than one user. If you're not sure whether retrieval is working correctly, that uncertainty is itself a reason to activate the extension.
+</Tip>

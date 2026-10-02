@@ -1,0 +1,108 @@
+---
+title: 'Bunnita Memory Graph: Persistent Session Intelligence'
+sidebarTitle: 'Memory Graph'
+description: 'Bunnita uses a mem0 cloud graph with strict entity partitioning so every session compounds into long-term optimization across the committee.'
+---
+
+Bunnita's memory graph is not a log of what happened — it is the mechanism by which the system gets better over time. Each session writes structured observations into a partitioned graph, and future sessions retrieve those observations to make faster decisions, avoid repeated mistakes, and deepen collaboration with the user. Memory is the optimization engine; the graph is its substrate.
+
+## Entity structure
+
+The graph is partitioned by entity. Every write targets a specific entity, and every search scopes to the entities relevant to the task at hand. This prevents cross-contamination between committee-member domains and keeps user-scoped preferences cleanly separated from architectural decisions.
+
+```
+Entities
+├── bunnita-v1          committee decisions
+├── zachari             user scope (taste, preferences)
+├── isabella-marchetti
+├── daniel-okonkwo
+├── priya-krishnamurthy
+├── marcus-chen
+├── soren-aalto
+└── renata-ferreira
+```
+
+The `bunnita-v1` entity holds decisions made at the committee level — ratified changes, version-frozen states, convener rulings. The `zachari` entity holds user-scoped memory: taste, preferences, recurring patterns in how the user works. Each committee member's entity holds observations, learnings, and refinements that belong to their domain.
+
+## Committee-owned categories
+
+Within the graph, every memory is tagged with a category that indicates both domain and ownership. There are eight recognized categories:
+
+| Category | Owner |
+|---|---|
+| `safety_architecture` | Isabella |
+| `tool_architecture` | Daniel |
+| `memory_architecture` | Priya |
+| `tone_ux_architecture` | Marcus |
+| `engineering_architecture` | Søren |
+| `integration_verification` | Renata |
+| `committee_decisions` | bunnita-v1 |
+| `bunnita_taste` | User-scoped |
+
+Writing to a category outside your owner scope is a protocol violation. If a session surfaces an observation that belongs to another owner's domain, flag it for that owner rather than writing it yourself.
+
+## The four required identifiers
+
+Every memory operation — read or write — must carry four identifiers. These are not optional metadata; they are how the graph attributes observations to the correct context and prevents pollution across runs, users, and agents.
+
+| Identifier | Format | Purpose |
+|---|---|---|
+| `--app-id` | `bunnita` | Scopes all operations to this application |
+| `--run-id` | `mem0-run-MM-DD-YYYY` | Ties the operation to a specific session date |
+| `--user-id` | User identifier | Scopes user-facing memory correctly |
+| `--agent-id` | Agent identifier | Distinguishes which agent performed the write |
+
+<Warning>
+  Every memory operation must include all four identifiers: `--app-id`, `--run-id`, `--user-id`, and `--agent-id`. Writes missing any identifier will pollute the graph and cannot be reliably attributed or cleaned up. There are no exceptions.
+</Warning>
+
+## Writing and searching: concrete examples
+
+Before writing any memory, search first. This is not a suggestion — it is the deduplication protocol. If a relevant memory exists with a confidence score of **0.7 or higher**, update the existing entry rather than creating a new one. Creating duplicates degrades retrieval quality and inflates the graph without adding information.
+
+**Search example — retrieving safety architecture observations:**
+
+```python
+client.search(
+    query="safety floor refusal tone calibration",
+    user_id="isabella-marchetti",
+    app_id="bunnita",
+    agent_id="bunnita-core",
+    run_id="mem0-run-06-15-2025",
+    filters={"category": "safety_architecture"}
+)
+```
+
+**Write example — recording a new tool architecture observation:**
+
+```python
+client.add(
+    messages=[{
+        "role": "assistant",
+        "content": "Browser automation extension requires explicit host-capability confirmation before loading. Silent load on ambiguous tool signals causes verification failures."
+    }],
+    user_id="daniel-okonkwo",
+    app_id="bunnita",
+    agent_id="bunnita-core",
+    run_id="mem0-run-06-15-2025",
+    metadata={
+        "category": "tool_architecture",
+        "version": "v1.7"
+    }
+)
+```
+
+## What memory enables
+
+The graph powers six distinct optimization functions across the system:
+
+- **Session optimization** — retrieves prior context so each session starts closer to the user's actual working state
+- **Safety reinforcement** — surfaces prior decisions about edge cases so the model does not re-litigate resolved ambiguities
+- **Prompt effectiveness tracking** — records which phrasings and structures produced good outcomes, informing future refinement
+- **Capability discovery** — logs newly confirmed tool availability and model-tier assessments for future sessions on the same deployment
+- **Failure analysis** — captures what went wrong and why, creating a searchable record of patterns to avoid
+- **Long-term refinement loops** — accumulates observations across sessions so the prompt evolves based on real usage, not hypothetical cases
+
+## The four memory horizons
+
+Bunnita organizes memory retrieval across four horizons — from immediate in-session context through to persistent long-term state. Each horizon operates at a different timescale and serves a different retrieval purpose. The internal mechanics of how horizons are implemented are part of Priya's domain and are not exposed here; what matters architecturally is that retrieval is always horizon-aware, and that writes specify which horizon they target.

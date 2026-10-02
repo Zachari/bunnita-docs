@@ -1,47 +1,98 @@
 ---
-title: "Quickstart"
-description: "Begin with a guide on the fastest path to a successful outcome"
+title: 'Get Started with Bunnita in Four Steps'
+sidebarTitle: 'Quickstart'
+description: 'Adopt the frozen v1.7 build, declare your runtime, scan capabilities, retrieve your memory graph, and run your first fully scaffolded Bunnita session.'
 ---
 
-Describe how someone begins using your product. What is the first thing they need to do? Are there any prerequisites?
-
-A quickstart should take someone from zero to using your product. They'll get a quick win and a sense of what they can accomplish.
+Getting Bunnita running is a matter of four deliberate steps: adopting the build, declaring your runtime, scanning your capability directories, and retrieving your persistent memories. Once those four steps complete, you are inside a fully scaffolded session with the meta-recurrent loop active. This page walks you through each step with the exact commands and declarations you need.
 
 ## Prerequisites
 
-Before you begin, you must have:
+Before you begin, confirm you have the following:
 
-- Requirement one (for example, Node.js 18+, a free account, an API key)
-- Requirement two (for example, a compatible device, a compatible browser, a compatible operating system)
-
-## Get started
-
-<Steps>
-  <Step title="Install">
-    Describe how to install your product or sign up.
-
-    ```bash
-    npm install your-package
-    ```
-  </Step>
-  <Step title="Configure">
-    Describe any setup or configuration needed before first use.
-
-    ```bash
-    your-cli init
-    ```
-  </Step>
-  <Step title="Run it">
-    Show the first thing a user does to see it working.
-
-    ```bash
-    your-cli start
-    ```
-  </Step>
-</Steps>
+- **API access** to Claude Opus 5 or Claude Sonnet 5 (Opus 5 for default work, Sonnet 5 for light verification tasks)
+- **The Bunnita repository** cloned locally, including the `Builds/` directory and the `.agents/` capability scaffold
+- **A mem0 account** with your run identifiers ready: `--user-id`, `--app-id bunnita`, and a `--run-id` in `mem0-run-MM-DD-YYYY` format
 
 <Tip>
-  Give people a way to get help. This could be a link to a support page, a chat with a customer support agent, or a forum for your product.
-
-  Example: Need help? Reach out to us at [support@yourcompany.com](mailto:support@yourcompany.com).
+  Choose your model tier before you start. Use **Claude Opus 5** for all default architectural, analytical, and generative work — it is the assumed tier the build is calibrated for. Switch to **Claude Sonnet 5** when you need fast, lightweight verification passes: reviewing a small diff, checking a memory write for consistency, or confirming a capability scan result. Fable 5 and Fable 5.1 are fully supported at or above the Opus 5 tier.
 </Tip>
+
+<Note>
+  If you are running on **Haiku 4.5**, the `capability-scaffold` extension auto-loads as the L2 fallback floor. You do not need to manually activate it. Haiku 4.5 is the minimum supported model tier — sessions below this level are outside the ratified build envelope.
+</Note>
+
+## Steps
+
+<Steps>
+  <Step title="Adopt the Build">
+    Open your session by reading the frozen v1.7 system prompt into context. The file lives at:
+
+    ```
+    Builds/bunnita-system-prompt-v1-7.md
+    ```
+
+    Read the entire file at session start — do not summarize it, truncate it, or load it incrementally. The build is 2,715 words and is designed to be ingested whole so that all seven XML sections are active simultaneously.
+
+    After the build loads, declare your runtime. The runtime declaration drives which scaffolds, extensions, and thinking modes activate for this session:
+
+    ```xml
+    <runtime active_model="opus-5" thinking="adaptive" effort="high" />
+    ```
+
+    Adjust `active_model` to match the model you are actually running (`opus-5`, `sonnet-5`, `fable-5`, `fable-5-1`, or `frontier` for FRONTIER mode). Set `thinking` to `adaptive` unless you have a specific reason to use `fixed` or `off`. Set `effort` to `high` for complex work or `standard` for routine tasks.
+  </Step>
+
+  <Step title="Run Capability Detection">
+    Scan all four capability directories to build a complete picture of what extensions and agents are available in this environment. Run each scan in sequence:
+
+    ```bash
+    ls .agents/skills/
+    ```
+
+    ```bash
+    ls .agents/plugins/
+    ```
+
+    ```bash
+    ls .agents/agents/
+    ```
+
+    ```bash
+    ls .agents/prompt-extensions/
+    ```
+
+    Review the output of each scan before proceeding. If a directory is missing or returns empty, note it — a missing `.agents/prompt-extensions/` directory means no extensions are available for this session and you are running on the base build only. Report any gaps to the Committee at the next deliberation cycle.
+  </Step>
+
+  <Step title="Retrieve Memories">
+    Pull your relevant memories from the mem0 knowledge graph before you begin task work. Run targeted searches against the two most important memory categories: your **taste profile** (preferences, aesthetic signals, working style) and your **capability map** (what tools, patterns, and workflows have been validated across prior sessions).
+
+    ```bash
+    mem0 search "[taste]" --user-id zachari --app-id bunnita --run-id mem0-run-MM-DD-YYYY
+    ```
+
+    ```bash
+    mem0 search "[capability]" --user-id zachari --app-id bunnita --run-id mem0-run-MM-DD-YYYY
+    ```
+
+    Replace `MM-DD-YYYY` with today's date. If this is your first session, both searches will return empty — that is expected. Your graph will populate as you close sessions and persist metadata. You can also search for `[pattern]`, `[safety]`, or `[ux]` tagged memories depending on what context is most relevant to the work ahead.
+  </Step>
+
+  <Step title="Do Your Work, Then Persist and Close">
+    Run your session. When you are done, extract the metadata your session produced and write it back to the memory graph before you close. At minimum, log any new process patterns, capability signals, or behavioral observations you want available in future sessions.
+
+    Here is an example write for a process pattern observed during a code review session:
+
+    ```bash
+    mem0 add \
+      "[pattern] Structured diff review: read full diff before commenting, group feedback by impact level, flag safety concerns first" \
+      --user-id zachari \
+      --app-id bunnita \
+      --run-id mem0-run-MM-DD-YYYY \
+      --agent-id bunnita-core
+    ```
+
+    Every write must carry all four identifiers: `--user-id`, `--app-id`, `--run-id`, and `--agent-id`. Writes missing any identifier will not be retrievable in future sessions and break the meta-recurrent loop. Close the session only after all writes have confirmed successfully.
+  </Step>
+</Steps>

@@ -1,0 +1,47 @@
+---
+title: 'capability-scaffold: Graceful Degradation for Lighter Models'
+sidebarTitle: 'capability-scaffold'
+description: 'capability-scaffold provides explicit step-by-step procedural scaffolding when the active model falls below the assumed reasoning tier or a task stalls.'
+---
+
+When Bunnita runs on a model below its assumed reasoning tier, or when a complex task is stalling for lack of explicit steps, `capability-scaffold` loads to fill the gap. It provides the procedural detail that the core assumes a capable model would infer on its own — turning implicit reasoning chains into explicit, numbered steps that any model can follow reliably.
+
+## At a Glance
+
+| Property | Value |
+|---|---|
+| **Domain** | Cross-cutting |
+| **Critical** | Yes — exempt from auto-deprecation |
+| **Auto-deprecation** | Never |
+
+## Activation Triggers
+
+`capability-scaffold` loads when either of the following conditions is true:
+
+1. **The active model sits below the core's assumed reasoning tier.** Bunnita's core is authored against Claude Opus 5. Any model below that tier triggers the scaffold.
+2. **A task is failing for lack of explicit steps.** If the active model (at any tier) is not successfully completing a task because it cannot infer intermediate steps, the scaffold loads to supply them.
+
+## How Activation Works
+
+The `<runtime active_model="...">` declaration in the bootstrap is what drives scaffold loading. Bunnita reads that value and compares it against the assumed tier.
+
+**If the declaration is absent**, Bunnita resolves the active model to `haiku-4.5` — and the scaffold **always loads** under that fallback. To avoid unnecessary scaffold overhead, always include an explicit `active_model` declaration in the bootstrap.
+
+<Note>
+On **Claude Opus 5** — the assumed tier — `capability-scaffold` does **not** load. The core prompt is written to assume Opus 5's reasoning capacity. The scaffold exists for sessions that run on lighter models or encounter tasks that need more explicit guidance.
+</Note>
+
+## What the Scaffold Provides
+
+When active, `capability-scaffold` injects step-by-step procedural scaffolding into the session context. Specifically, it:
+
+- Breaks multi-step reasoning chains into numbered, discrete actions
+- Surfaces intermediate verification checkpoints so partial progress is visible
+- Adds explicit "if this step fails, do X" branching that the core leaves implicit
+- Restates preconditions and postconditions for each major operation
+
+The scaffold does not change Bunnita's goals or behavioral architecture — it only makes the path to those goals more explicit.
+
+## Interaction with Other Extensions
+
+`capability-scaffold` is cross-cutting by design. It can load alongside any other extension and applies its procedural scaffolding to whatever domain that extension covers. If `subagent-protocol` and `capability-scaffold` are both active, for example, the scaffold adds explicit step-by-step guidance to the subagent dispatch process.

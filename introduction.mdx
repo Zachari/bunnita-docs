@@ -1,0 +1,58 @@
+---
+title: 'Bunnita: Recursive AI Prompt Architecture'
+sidebarTitle: 'Introduction'
+description: 'Bunnita is a prompt engineering framework built around a meta-recurrent loop — each session feeds the next, turning raw model capability into compounding intelligence.'
+---
+
+Bunnita is a prompt engineering framework that treats your system prompt not as a static instruction set, but as a living operating system — one that evolves session by session through structured memory, committee governance, and recursive self-improvement. If you have ever felt that frontier AI models are capable of far more than you are actually getting from them, Bunnita is built to close that gap.
+
+## Why Bunnita Exists
+
+Most frontier models are underutilized. The bottleneck is not raw capability — it is architecture. A model like Claude Opus 5 carries immense latent potential, but without deliberate scaffolding, that potential collapses into generic responses shaped by whatever context happens to arrive in a single session window. Bunnita replaces that accidental architecture with an intentional one: a system prompt engineered to expose, coordinate, and persist the full depth of what your model tier can do.
+
+## The Meta-Recurrent Loop
+
+The heart of Bunnita is a closed feedback cycle that runs across every session you conduct:
+
+**Session → Metadata Extraction → mem0 Knowledge Graph → Committee Deliberation → Prompt Evolution → Better Sessions → ∞**
+
+Each session you run produces structured metadata — capability signals, behavioral patterns, UX friction points, safety observations. That metadata flows into a persistent mem0 knowledge graph, where it is tagged, partitioned, and made retrievable. At deliberation time, the Committee reviews accumulated signals and proposes targeted edits to the system prompt. Those edits produce a better build, which produces better sessions. The loop is genuinely recursive: the architecture improves the output, and the output improves the architecture.
+
+## Key Innovations
+
+Bunnita introduces five structural innovations that distinguish it from conventional prompt engineering:
+
+**XML Section Architecture** — The system prompt is organized into seven top-level XML sections, each owned by a dedicated committee member. This ownership model makes the prompt auditable, evolvable, and conflict-resistant.
+
+**Persistent Memory Graph** — A mem0 cloud knowledge graph stores cross-session learning with strict entity partitioning. Every memory write carries four identifiers — app, run, user, and agent — so retrievals are precise and context-safe.
+
+**Committee Governance** — Six specialized agents deliberate on every architectural decision. No single perspective dominates. Safety, tooling, memory, UX, engineering, and verification each hold a seat.
+
+**Dynamic Extensions** — Modular capability files load on task match rather than sitting in the base prompt. The extension ceiling is ratified at seven active extensions, two of which are critical-tier.
+
+**Capability-Native Core** — The build is designed for a specific model tier and degrades gracefully through defined fallback levels rather than silently producing lower-quality output.
+
+## Current Version
+
+<Note>
+  Bunnita v1.7 is the current build and is **frozen**. The system prompt file lives at `Builds/bunnita-system-prompt-v1-7.md`. No modifications to v1.7 are in progress — all active architectural work targets the next deliberation cycle, which will produce v1.8 when ratified by the Committee. Run v1.7 exactly as shipped.
+</Note>
+
+The v1.7 build targets **Claude Opus 5** as the assumed tier for all default work. **Claude Sonnet 5** serves as the light verification tier. **Fable 5 and Fable 5.1** sit at or above the assumed tier and are fully supported. For experimental work with models outside the ratified five, **FRONTIER mode** is available — currently configured for Claude Opus 5.5.
+
+## Where to Go Next
+
+<CardGroup cols={2}>
+  <Card title="Quickstart" icon="bolt" href="/quickstart">
+    Adopt the v1.7 build, declare your runtime, scan capabilities, retrieve memories, and run your first Bunnita session in four steps.
+  </Card>
+  <Card title="XML Section Architecture" icon="code" href="/architecture/xml-structure">
+    Explore the seven top-level XML sections that structure the system prompt and learn how committee ownership keeps the build coherent.
+  </Card>
+  <Card title="Committee Overview" icon="users" href="/committee/overview">
+    Meet the six specialized agents who govern Bunnita's architectural decisions through structured deliberation rounds.
+  </Card>
+  <Card title="Extensions Overview" icon="puzzle-piece" href="/extensions/overview">
+    Understand how Bunnita's seven modular extensions load on task match and how the two critical-tier extensions protect session integrity.
+  </Card>
+</CardGroup>

@@ -1,0 +1,100 @@
+{
+  "projectType": "framework",
+  "projectName": "Bunnita",
+  "projectDescription": "A recursive AI prompt architecture that transforms frontier models into self-improving reasoning systems through structured XML sections, committee governance, persistent cloud memory, and dynamic extension loading.",
+  "theme": "luma",
+  "primaryColor": "#ef7025",
+  "lightColor": "#eec9bc",
+  "darkColor": "#4fa1ab",
+  "navigation": {
+    "tabs": [
+      {
+        "tab": "Documentation",
+        "groups": [
+          {
+            "group": "Get Started",
+            "pages": [
+              "introduction",
+              "quickstart",
+              "core-concepts"
+            ]
+          },
+          {
+            "group": "Architecture",
+            "pages": [
+              "architecture/xml-structure",
+              "architecture/memory-graph",
+              "architecture/extension-system",
+              "architecture/permission-model"
+            ]
+          },
+          {
+            "group": "The Committee",
+            "pages": [
+              "committee/overview",
+              "committee/members",
+              "committee/deliberation-protocol"
+            ]
+          },
+          {
+            "group": "Extensions",
+            "pages": [
+              "extensions/overview",
+              "extensions/capability-scaffold",
+              "extensions/safety-advanced",
+              "extensions/subagent-protocol",
+              "extensions/memory-advanced",
+              "extensions/personality-variation",
+              "extensions/browser-automation",
+              "extensions/multi-language"
+            ]
+          },
+          {
+            "group": "Skills & Memory",
+            "pages": [
+              "skills/overview",
+              "memory/entity-partitioning",
+              "memory/tag-conventions",
+              "memory/operations"
+            ]
+          },
+          {
+            "group": "Working With Bunnita",
+            "pages": [
+              "guides/session-lifecycle",
+              "guides/model-routing",
+              "guides/frontier-mode",
+              "guides/build-workflow",
+              "guides/version-history"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "keyFeatures": [
+    "Recursive meta-recurrent loop — every session improves the next through structured memory feedback",
+    "XML-structured system prompt with 7 top-level sections and 20 paired tags",
+    "Six-agent committee governance (Isabella, Daniel, Priya, Marcus, Søren, Renata) with append-only deliberation log",
+    "mem0 cloud memory graph with entity partitioning and four-identifier attribution",
+    "Dynamic extension system — 7 active extensions loaded on-demand by task match",
+    "3-tier permission model (Freely Available → Confirm First → Never Perform) plus an independent safety floor",
+    "FRONTIER mode for testing new frontier models outside the ratified five",
+    "7 project-scoped skills for bootstrapping, build verification, committee deliberation, memory hygiene, and more",
+    "Capability-Native Core — assumes a capable reasoning substrate; scaffolding relocates to capability-scaffold for lighter tiers",
+    "Document-Truth Audit gates every build: counts, rules, capability labels, and declared target models must agree across all operative documents"
+  ],
+  "publicApiSurface": [
+    "mem0 add / search / list / update — four-identifier cloud memory operations",
+    "prompt-extensions: capability-scaffold, safety-advanced, subagent-protocol, browser-automation, memory-advanced, personality-variation, multi-language",
+    "skills: bunnita-session-bootstrap, bunnita-build-verification, bunnita-committee-deliberation, bunnita-memory-hygiene, bunnita-iteration-review, bunnita-task-management, bunnita-process-logging",
+    "FRONTIER sub-modes: FRONTIER·STEADY, FRONTIER·OPEN, FRONTIER·MAX",
+    "Runtime declaration: <runtime active_model=\"...\" thinking=\"adaptive\" effort=\"...\" />",
+    "Permission tiers: Freely Available, Confirm First, Never Perform",
+    "Safety floor categories: Weapons Uplift, Child Sexual Content, Functional Malware",
+    "Memory tag conventions: [capability], [self-critique], [deliberation], [process], [process-failed], [taste], [safety_incident], [tool_observation], [prompt_effectiveness], [skill: name]",
+    "Eight memory categories: safety_architecture, tool_architecture, memory_architecture, tone_ux_architecture, engineering_architecture, integration_verification, committee_decisions, bunnita_taste",
+    "Model routing tiers: L2 fallback (Haiku 4.5), Light Verification (Sonnet 5), Assumed Tier (Opus 5), At-or-above (Fable 5/5.1)",
+    "Build workflow gates: pre-ship checklist (11 items), Document-Truth Audit (4 checks), convener approval"
+  ]
+}

@@ -1,0 +1,46 @@
+---
+title: "Bunnita Version History and Architecture Evolution"
+sidebarTitle: "Version History"
+description: "Trace Bunnita's architectural evolution from the v1.0 foundation through the frozen v1.7 Mechanism release and understand what changed at each step."
+---
+
+Bunnita's version history is not a list of feature additions — it is a record of the architecture's evolving understanding of itself. Each version was shaped by accumulated session memories, committee deliberation on the previous build's deficiencies, and empirical evidence from prior builds operating in production. That meta-recurrent loop is why v1.7 is architecturally coherent in ways that v1.0 could not have been: the architecture learned from running itself.
+
+## Version Table
+
+| Version | Name | Innovation |
+|---|---|---|
+| v1.0 | — | Foundational architecture — the base agent structure, skill system, and mem0 integration that all subsequent versions build on |
+| v1.1 | — | Gap resolution and personality systems — addressed structural gaps identified in v1.0 operation and introduced consistent behavioral personality across agents |
+| v1.2 | — | Agent Skills and mem0 migration — formalized the skill system as a first-class capability primitive and migrated memory to the four-identifier attribution scheme |
+| v1.3 | — | Recursive feedback loops — introduced the meta-recurrent pattern: session memories inform deliberation, deliberation informs builds, builds inform sessions |
+| v1.4 | — | Split architecture and dynamic extensions — separated the core system prompt from capability extensions, enabling the extension system and establishing the 7-extension ceiling |
+| v1.5 | Structured Execution | 4,909-word core with explicit execution scaffolding — the execution model is written into the prompt rather than implied by the architecture |
+| v1.6 | Capability-Native | The inversion: assumes a capable reasoning model rather than scaffolding for a weak one. Relocated scaffolding to `capability-scaffold`; core drops to 1,926 words; `knowledge-base/` introduced; Document-Truth Audit gates builds |
+| v1.7 | Mechanism | Gives an actor and a failure direction to four behaviors v1.6 named without one: runtime declaration drives scaffold loading, a boundary decision ends in a write, four-identifier attribution returns inline, capability discovery reports `scan_status`. 2,715 words. Frozen. |
+
+## v1.7: Frozen
+
+v1.7 is the current active build and it is frozen. "Frozen" means no change — not even a one-word correction — without convener consent. The thaw procedure is in `knowledge-base/build/process.md` and it applies one defect at a time.
+
+The cumulative change cap for v1.7 patches is 30 words. A patch applied on 2026-09-14 consumed 2 words, leaving 28 of the 30-word cap available. When the cap is exhausted, the next required change becomes the first proposal for v1.8 rather than a patch to v1.7.
+
+The freeze preserves the audited baseline that all current mem0 attributions and agent routing decisions reference. Unfreezing v1.7 without the controlled thaw procedure would silently invalidate those references.
+
+## v1.6: Provisional Status
+
+<Note>
+v1.6 carried two known defects forward into v1.7's notes rather than patching them in place, because v1.6 is frozen. The first defect was a DeepSeek framing error: a reference to DeepSeek in a context that implied a routing relationship the architecture did not actually have. The second was the self-reported audit: the v1.6 Document-Truth Audit was signed by the same person who wrote the build, violating the independence requirement that the audit exists to enforce. Both defects were documented in v1.7's changelog and addressed in v1.7's design, but neither could be corrected in v1.6 without unfreezing it. This is why v1.7's audit independence requirement — signed by someone other than the author — is explicit rather than implied.
+</Note>
+
+v1.6 is retired, not resolved. The intended improvement evaluation for v1.6 was withdrawn because no valid baseline existed against which to measure improvement: the v1.5 baseline had itself not been audited under the Document-Truth standard that v1.6 introduced. A measurement against an unaudited baseline is not a valid measurement. Gate E — the empirical improvement gate — now binds all future versions: no version ships without a valid baseline for the improvement eval.
+
+## FRONTIER Mode Is Not a Version
+
+FRONTIER mode (introduced 2026-09-30) is a mode on v1.7, not a new version. Activating FRONTIER does not change the running build — it changes how the build's routing and effort controls behave when the host is running a frontier model. v1.7 remains the active build in every FRONTIER session. See the [FRONTIER Mode guide](/guides/frontier-mode) for activation phrases and sub-mode behavior.
+
+## The Meta-Recurrent Loop
+
+Each version in this table was informed by the accumulated session memories from all prior versions, the committee's deliberation on what those sessions revealed, and the empirical evidence from watching prior builds operate under real conditions. v1.3 formalized this loop as a design principle; every subsequent version has relied on it.
+
+The practical consequence: the architecture improves faster than the version table suggests. Between major versions, hundreds of session memories accumulate, capability patterns are discovered and tagged, and the committee's understanding of what the architecture actually does versus what it was designed to do sharpens. v1.7's four Mechanism-level changes each addressed a behavior that v1.6 had named but left unanchored — the evidence that those behaviors needed anchoring came from sessions, not theory.

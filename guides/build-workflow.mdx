@@ -1,0 +1,114 @@
+---
+title: 'Bunnita Build Workflow: From Proposal to Ship'
+sidebarTitle: 'Build Workflow'
+description: 'Walk the full Bunnita build workflow — committee deliberation through mem0 seeding and convener approval — so every build ships with a clean audit trail.'
+---
+
+Every Bunnita system prompt version goes through the same mandatory sequence before it ships. The sequence exists because previous builds that skipped steps — most notably v1.6's self-reported audit — produced defects that had to be carried forward into subsequent versions' notes rather than caught at the gate. Follow every step in order. Skipping or combining steps does not accelerate the build; it invalidates the audit trail and creates technical debt that future versions inherit.
+
+## The Build Sequence
+
+```
+Deliberation
+     ↓
+Proposal Generation
+     ↓
+Committee Voting
+     ↓
+Prompt Finalization
+     ↓
+Document-Truth Audit
+     ↓
+Pre-Ship Checklist
+     ↓
+mem0 Seeding
+     ↓
+Next Iteration
+```
+
+Each stage produces artifacts that the next stage depends on. Deliberation produces the design space. Proposals surface specific options. Voting produces a mandate. Finalization produces the draft. The audit verifies the draft against its claims. The checklist verifies the audit was run correctly. Seeding makes the build's decisions retrievable. Next iteration captures what was deferred.
+
+## Stage Descriptions
+
+**Deliberation** — The committee examines the current build's known issues, deferred items, and new capability requirements. Every committee member with relevant scope participates. Deliberation ends when the design space is understood well enough to generate specific proposals.
+
+**Proposal Generation** — Produce concrete, evaluable proposals. A proposal is not a vague direction — it is a specific change with a stated rationale, expected word-count impact, and known tradeoffs. Proposals that cannot be evaluated against those criteria go back to deliberation.
+
+**Committee Voting** — Each eligible committee member casts a vote. Quorum rules are in `Subagents/committee-runtime-contract.md`. A failed quorum does not produce a build mandate — the vote is held again after the blocking condition is resolved.
+
+**Prompt Finalization** — Write the new build file at `Builds/bunnita-system-prompt-vX-Y.md`. The file includes the full `<system_prompt>…</system_prompt>` body, a changelog, and declared metadata (version, word count, target models). Do not edit the file after the Document-Truth Audit begins.
+
+**Document-Truth Audit** — Run all four audit checks (see below) against the finalized build file. The audit must be signed by someone other than the build's author.
+
+**Pre-Ship Checklist** — Verify all eleven checklist items before seeding. A checklist item that cannot be verified is a build blocker — do not seed an unverified build.
+
+**mem0 Seeding** — Write build decisions to mem0 with `[deliberation]` tags and full entity partitioning. Seeding makes the build's rationale retrievable in future sessions so future committee deliberations can reference prior decisions without re-deriving them.
+
+**Next Iteration** — Document what was considered but deferred: proposals that did not achieve a mandate, issues that were discovered too late to address in this build, and known improvements for the next cycle.
+
+## The Pre-Ship Checklist
+
+Complete all eleven items before seeding. Each item is a gate, not a suggestion.
+
+1. **Build file exists** — `Builds/bunnita-system-prompt-vX-Y.md` is present and named correctly for the version being shipped.
+
+2. **Word count verified** — Run `wc -w` on the `<system_prompt>…</system_prompt>` body span only, not the whole file. The file header, changelog, and metadata sections are outside the body span and must not contribute to the count. Confirm the count matches the declared word count in the file.
+
+3. **XML tags paired** — Every XML open tag has a corresponding close tag. Use structural extraction to verify — do not do a naive whole-file scan, which misses nested structures and misnested pairs.
+
+4. **Changelog accurate** — Every change in the build is reflected in the changelog. The changelog does not contain entries for changes that did not make it into the final build.
+
+5. **Agent files updated** — All six agent files carry the new `prompt_version` field. A missed agent file means that agent operates on a stale version reference, which breaks attribution and routing.
+
+6. **Build decision seeded to mem0** — The deliberation record is in mem0 with the `[deliberation]` tag and full entity partitioning (`--user-id`, `--app-id`, `--run-id`).
+
+7. **Agent isolation verified** — Each agent's mem0 scope returns only that agent's memories. Verify by querying each agent's scope individually and confirming no cross-contamination.
+
+8. **Cross-graph verified** — Querying `--user-id zachari` returns memories across all scopes. Verify that the build's seeded memories appear in the cross-graph query.
+
+9. **Document-Truth Audit run and signed** — The audit was completed by someone other than the build's author, and that person has signed the audit record.
+
+10. **Operational knowledge base updated** — If the build introduced new rules, constraints, or behaviors not previously documented, `knowledge-base/` reflects them.
+
+11. **Convener approval obtained** — Zachari has reviewed and approved the build for ship. No build ships without convener approval regardless of checklist status.
+
+## The Document-Truth Audit
+
+The Document-Truth Audit is a four-check verification that the build file's declared facts match its actual contents. Run it against the finalized build file before the pre-ship checklist.
+
+<Warning>
+The Document-Truth Audit must be signed by someone other than the build's author. Self-reporting was the defect in v1.6's audit trail — the author cannot objectively verify their own work, and an unsigned or self-signed audit does not satisfy the gate.
+</Warning>
+
+**Check 1: Counts agree**
+
+Verify that declared counts match actual counts:
+- Word count (body span only, as described in checklist item 2)
+- Extension count (declared number of active prompt extensions vs. actual entries)
+- Committee member count (declared roster vs. actual names in the file)
+
+**Check 2: Rules agree**
+
+Verify that rules stated in the changelog and metadata match rules present in the body:
+- Permission tier rules
+- Safety floor rules
+
+A rule that appears in the changelog but is absent from the body is a discrepancy. A rule present in the body but absent from the changelog is also a discrepancy.
+
+**Check 3: Capability labels agree**
+
+Verify that every capability label referenced in one part of the file is consistent with every other reference to the same label:
+- Extension names (must be identical wherever they appear)
+- Section names (must be identical wherever they appear)
+
+Label inconsistencies produce routing failures at runtime because agents match by exact label.
+
+**Check 4: Declared target models agree**
+
+Verify that the target models declared in the metadata match any model-specific behavior or routing described in the body. A model named in a routing rule but absent from the declared target list is a discrepancy.
+
+## The Build Freeze
+
+v1.7 is frozen. It thaws only on convener consent, one defect at a time, under the procedure in `knowledge-base/build/process.md`. The cumulative change cap is 30 words; 28 of those 30 words remain after a patch applied on 2026-09-14. A single patch cannot exceed the remaining cap. When the cap is exhausted, the next change requires a new version rather than a patch.
+
+The freeze exists to preserve a stable, audited baseline. An unfrozen build is a moving target — every change potentially invalidates prior audit findings and mem0 attributions.

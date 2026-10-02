@@ -1,0 +1,68 @@
+---
+title: 'Memory Tag Conventions for Bunnita Sessions'
+sidebarTitle: 'Tag Conventions'
+description: 'Master the required content tags that prefix every Bunnita memory string and the eight committee-owned categories that organize the memory graph.'
+---
+
+Consistent tagging makes the difference between a memory graph you can query reliably and one that returns noisy or missing results. Every memory content string in Bunnita must open with a bracketed tag that classifies the memory type. These tags are not optional annotations — they are the primary filter that skills, agents, and cross-graph searches depend on to find the right memories at the right time.
+
+## Tag Reference
+
+Use the table below to select the correct opening tag for any memory you write.
+
+| Tag | Use |
+|---|---|
+| `[capability]` | What an agent, skill, or extension does |
+| `[self-critique]` | Agent self-analysis of its own performance or reasoning |
+| `[deliberation]` | Committee debate contributions and decisions |
+| `[process]` | Successful multi-step processes with outcome |
+| `[process-failed]` | Failed processes with root cause identified |
+| `[taste]` | Zachari's preferences and aesthetic judgments |
+| `[safety_incident]` | Safety boundary events and violations |
+| `[tool_observation]` | Observations about tool usage and behavior |
+| `[prompt_effectiveness]` | Output quality assessments and prompt performance |
+| `[skill: name]` | Results from a named skill invocation |
+
+For skill invocation results, replace `name` with the skill's file name — for example, `[skill: bunnita-session-bootstrap]`.
+
+## The Eight Memory Categories
+
+The committee owns and maintains eight named memory categories. Each category is associated with a primary agent responsible for reviewing and curating its contents.
+
+| Category | Primary Agent |
+|---|---|
+| `safety_architecture` | Isabella |
+| `tool_architecture` | Daniel |
+| `memory_architecture` | Priya |
+| `tone_ux_architecture` | Marcus |
+| `engineering_architecture` | Søren |
+| `integration_verification` | Renata |
+| `committee_decisions` | bunnita-v1 |
+| `bunnita_taste` | User-scoped |
+
+`bunnita_taste` is user-scoped rather than agent-scoped — store it without `--agent-id` so it lives in Zachari's personal memory partition.
+
+## Well-Tagged Memory Examples
+
+The examples below show correctly formed memory strings ready to pass to `mem0 add`.
+
+A session bootstrap result stored as a process memory:
+```
+[process] bunnita-session-bootstrap loaded 5 memories, detected 7 skills, surfaced track T001 status
+```
+
+A committee ship decision stored as a deliberation memory:
+```
+[deliberation] vX.Y SHIPPED. Build at Builds/bunnita-system-prompt-vX-Y.md.
+```
+
+A skill capability record stored after successful activation:
+```
+[capability] subagent-protocol loaded for multi-agent coordination task — successful
+```
+
+Each string starts with its tag, follows immediately with a concise description, and includes enough context to be useful on its own when returned by a future search.
+
+<Tip>
+  Log failures with `[process-failed]` just as diligently as you log successes with `[process]`. A failure record that includes the root cause is one of the most valuable entries in the memory graph — it prevents the same mistake from recurring across sessions and gives the iteration-review skill concrete material to work with when proposing improvements.
+</Tip>

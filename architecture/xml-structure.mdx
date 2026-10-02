@@ -1,0 +1,66 @@
+---
+title: 'Bunnita XML Section Architecture Explained'
+sidebarTitle: 'XML Structure'
+description: 'The seven XML sections in Bunnita create explicit attention boundaries and map every domain to a single accountable owner across the committee.'
+---
+
+Bunnita's prompt is not a wall of instructions — it is a structured document where every section boundary is load-bearing. The XML tags tell the model where one owner's domain ends and another begins, create navigable anchors for attention, and make ownership unambiguous during review, debugging, and extension authoring. Understanding the structure is the foundation for understanding everything else Bunnita does.
+
+## XML tags as architecture, not decoration
+
+XML tags in Bunnita serve a precise function: they partition the model's attention space. When the model processes `<behavioral_architecture>`, it is not reading a label — it is entering a scoped region with a single owner, a defined contract, and a predictable relationship to every other region. This makes it possible to reason about which part of the prompt governs a given behavior, to load extensions into the right slot, and to hold owners accountable when a section underperforms.
+
+The rule is strict: each top-level section maps to exactly one owner's domain. No section bleeds into another. No owner governs two sections. This constraint is what makes the architecture auditable.
+
+## Full architecture diagram
+
+```
+BUNNITA CORE v1.7 — 2,715 words · 7 sections · 20 paired tags
+│
+├── <identity>
+├── <behavioral_architecture>      tiers · invariants · safety floor
+├── <extension_contract>           the pillars extensions may never override
+├── <tool_architecture>            verification · workspace · discovery
+├── <memory_architecture>          four horizons
+├── <tone_and_ux_architecture>     modes · containers · formatting · self-model
+└── <agent_detection>
+         ↓
+ capability-scaffold loads for lighter tiers
+         ↓
+ Dynamic Extension Loading (7 active)
+```
+
+## Section ownership table
+
+Every section is owned by exactly one committee member. That owner is accountable for the section's correctness, completeness, and integration with the rest of the architecture.
+
+| Section | Owner | Purpose |
+|---|---|---|
+| `<identity>` | Committee | Thought partnership framework |
+| `<behavioral_architecture>` | Isabella | Permission tiers, invariants, safety floor |
+| `<extension_contract>` | Daniel | Inviolable pillars + extension lifecycle |
+| `<tool_architecture>` | Daniel | Tool loading, verification, orchestration |
+| `<memory_architecture>` | Priya | Retrieval + graph memory |
+| `<tone_and_ux_architecture>` | Marcus | Collaboration depth + UX |
+| `<agent_detection>` | Daniel | Capability scanning |
+
+### Cross-cutting roles
+
+Two committee members — Søren and Renata — hold no single section by design. Their domains do not fit inside one tag boundary.
+
+- **Søren** owns whole-system architecture and target-model fit. His work touches every section because the question of whether the prompt performs correctly on a given model cannot be answered by inspecting any one region in isolation.
+- **Renata** owns seam analysis and integration verification. She audits the boundaries between sections — the places where one owner's contract meets another's — and verifies that extensions load cleanly without creating contradictions at those seams.
+
+This is not an oversight in the ownership model. It is a deliberate architectural choice: cross-cutting concerns require cross-cutting accountability.
+
+## The capability-native inversion
+
+Before v1.6, Bunnita's core included scaffolding — explicit step-by-step guidance designed to compensate for models that could not be trusted to reason independently. That scaffolding was load-bearing for lighter-tier deployments but dead weight on capable models, where it added words without adding value.
+
+v1.6 made a deliberate inversion: the core now **assumes a capable reasoning model** and removes all scaffolding from the default prompt. For deployments on lighter tiers — models that genuinely need explicit guidance to perform reliably — the `capability-scaffold` extension loads instead. The core stays compact and clean; the scaffolding exists where it is needed and is absent where it is not.
+
+This is the capability-native design principle: write the core for the best model you expect to run it, and let extensions handle the downgrade path.
+
+<Note>
+  Bunnita Core v1.7 is frozen at **2,715 words** across 7 sections and 20 paired tags. Any addition to the core requires a formal committee proposal and convener approval. Extensions are the correct path for adding new capability without touching the frozen core.
+</Note>

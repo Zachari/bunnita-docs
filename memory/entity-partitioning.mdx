@@ -1,0 +1,78 @@
+---
+title: 'Memory Entity Partitioning in Bunnita'
+sidebarTitle: 'Entity Partitioning'
+description: 'Learn how Bunnita isolates agent memories with four-identifier attribution on every mem0 operation and how to query across entity graphs.'
+---
+
+Entity partitioning keeps each agent's memory graph isolated from every other agent's while still allowing cross-graph queries when you need a broader view. Bunnita achieves this through mem0's identifier system: every operation you perform must carry all four identifiers so that memories land in exactly the right scope and are never silently mixed with another agent's data.
+
+## The Four Required Identifiers
+
+Every mem0 operation — whether you are writing a new memory, updating an existing one, or searching — must include all four of the following identifiers:
+
+| Identifier | Required Value |
+|---|---|
+| `--app-id` | `bunnita` |
+| `--run-id` | `mem0-run-MM-DD-YYYY` (today's date) |
+| `--user-id` | `zachari` |
+| `--agent-id` | The agent's simple name (see table below) |
+
+Use a simple string for `--agent-id`. Never build a compound value by combining multiple names or roles — one agent, one ID, every time.
+
+## Agent ID Reference
+
+Use the table below to find the correct `--agent-id` value for each agent and for shared committee memory.
+
+| Scope | `--agent-id` value |
+|---|---|
+| Isabella's memories | `isabella-marchetti` |
+| Daniel's memories | `daniel-okonkwo` |
+| Priya's memories | `priya-krishnamurthy` |
+| Marcus's memories | `marcus-chen` |
+| Søren's memories | `soren-aalto` |
+| Renata's memories | `renata-ferreira` |
+| Committee decisions | `bunnita-v1` |
+| User preferences | *(omit `--agent-id`; defaults to user scope)* |
+
+When you are storing Zachari's personal preferences or taste memories, omit `--agent-id` entirely. mem0 defaults those writes to the user scope automatically.
+
+## The `bunnita:` Prefix Rule
+
+The `bunnita:` prefix appears in memory **content strings** to classify what a memory is about. It is never a valid value for any CLI parameter. Do not pass `--app-id bunnita:something` or `--agent-id bunnita:isabella` — both will route your memory to the wrong scope.
+
+## Example: Writing a Memory
+
+The example below writes a process memory scoped to Priya's agent graph:
+
+```bash
+mem0 add "[process] bunnita-session-bootstrap loaded 5 memories, detected 7 skills" \
+  --user-id zachari \
+  --app-id bunnita \
+  --run-id mem0-run-MM-DD-YYYY \
+  --agent-id priya-krishnamurthy
+```
+
+## Example: Cross-Graph Search
+
+To search across the committee's shared memory graph without filtering by a single agent, use the `bunnita-v1` agent ID:
+
+```bash
+mem0 search "[deliberation]" \
+  --user-id zachari \
+  --app-id bunnita \
+  --run-id mem0-run-MM-DD-YYYY \
+  --agent-id bunnita-v1
+```
+
+To search only user-scoped memories (Zachari's preferences), omit `--agent-id`:
+
+```bash
+mem0 search "[taste]" \
+  --user-id zachari \
+  --app-id bunnita \
+  --run-id mem0-run-MM-DD-YYYY
+```
+
+<Warning>
+  Always include `--app-id bunnita` on every mem0 operation. If you omit it, mem0 falls back to a default application scope and your memory leaks into the wrong partition. Recovering mis-scoped memories requires a manual audit against the golden backups in `mem0_backup/`. There is no automatic rollback.
+</Warning>

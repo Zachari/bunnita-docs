@@ -1,0 +1,174 @@
+---
+title: 'Bunnita Session Lifecycle: Bootstrap to Close'
+sidebarTitle: 'Session Lifecycle'
+description: 'Walk through the four phases of every Bunnita session — bootstrap, context, work, persist, and close — to run reliably from first token to last.'
+---
+
+Every Bunnita session follows a fixed sequence of phases that transform a cold runtime into a fully-loaded, context-aware collaborator and then close cleanly so nothing useful is lost. Understanding the full arc helps you anticipate what the model is doing at each moment, catch deviations early, and structure your own prompts to accelerate each phase rather than fight it.
+
+<Note>
+The always-on reading surface for every session totals approximately 10,520 words: `AGENTS.md` (the agent-routing contract at repo root), `Subagents/committee-runtime-contract.md` (binding runtime facts), and the active build file — currently `Builds/bunnita-system-prompt-v1-7.md`. These three documents are read unconditionally on every bootstrap. Nothing in `conductor/` shares that status; each conductor file is conditional on task type (see Phase 2).
+</Note>
+
+<Steps>
+
+<Step title="Phase 1: Bootstrap">
+
+Bootstrap is the mandatory loading sequence that runs before any task work begins. It is not optional and it is not abbreviated for short tasks. Every session opens with the same four actions in order.
+
+**1. Declare the active model**
+
+Emit the runtime declaration first — before reading any file or touching memory:
+
+```xml
+<runtime active_model="opus-5" thinking="adaptive" effort="high" />
+```
+
+The declaration pins the model identity, thinking mode, and effort level to the session record. All downstream scaffold loading, routing decisions, and mem0 attribution trace back to this declaration.
+
+**2. Adopt the current build**
+
+Read the active build file to load the full system prompt:
+
+```
+Builds/bunnita-system-prompt-v1-7.md
+```
+
+This is the frozen v1.7 Mechanism build. Reading it constitutes adopting it — you are not summarizing it, you are running it.
+
+**3. Read the committee runtime contract**
+
+```
+Subagents/committee-runtime-contract.md
+```
+
+This file contains binding runtime facts: committee member identities, quorum rules, voting procedures, and the constraints that govern all agent behavior in the session. Its contents cannot be overridden by conversational instruction.
+
+**4. Scan capability directories**
+
+Discover what skills, plugins, agents, and prompt extensions are available in this deployment:
+
+```bash
+ls .agents/skills/
+ls .agents/plugins/
+ls .agents/agents/
+ls .agents/prompt-extensions/
+```
+
+Report the scan result as a `scan_status` so the capability inventory is explicit in the session record. A v1.7 behavior: capability discovery does not silently pass — it surfaces what was found.
+
+**5. Retrieve relevant memories**
+
+Run the three standard mem0 searches to surface accumulated session knowledge:
+
+```bash
+mem0 search "[taste]" --user-id zachari --app-id bunnita
+mem0 search "[capability]" --user-id zachari --app-id bunnita
+mem0 search "[process]" --user-id zachari --app-id bunnita
+```
+
+These three searches cover user preferences and working style (`[taste]`), available and discovered capabilities (`[capability]`), and established process patterns (`[process]`). Use the results to calibrate tone, routing, and approach before the first task response.
+
+</Step>
+
+<Step title="Phase 2: Task-Conditional Context">
+
+Nothing in `conductor/` is read by default. Each conductor file is conditional on task type. Read a conductor file only when the condition is met — but when there is genuine ambiguity about whether the condition applies, resolve toward reading.
+
+| File | Read when |
+|---|---|
+| `conductor/product.md` | Cold start, or when you cannot accurately state what Bunnita is |
+| `conductor/tech-stack.md` | Cold start, or when the task touches platform configuration, mem0 setup, or model targeting |
+| `conductor/workflow.md` | When running a procedure end to end |
+| `conductor/tracks.md` | When creating, updating, closing, or reporting on a track |
+
+**Why conditional loading matters**
+
+The conductor files carry project context that is expensive to load speculatively and often unnecessary. Conditional loading keeps the context window focused on the task at hand. The ambiguity-resolves-toward-reading rule prevents under-loading: if you are uncertain whether the task touches a conductor file's domain, read it.
+
+**Cold start**
+
+A cold start occurs when the session has no prior memory hits for `[process]` and the model cannot confidently answer "What is Bunnita?" In a cold start, read both `conductor/product.md` and `conductor/tech-stack.md` unconditionally.
+
+</Step>
+
+<Step title="Phase 3: Work">
+
+With bootstrap complete and context loaded, execute the task using the available skill and capability inventory.
+
+**Standard execution**
+
+Identify the matching skill from your capability scan, invoke it, and log performance. For most tasks this is a single skill invocation producing a single output.
+
+**Complex work**
+
+For tasks that span multiple concerns or require staged reasoning, break the work into subtasks and track progress explicitly. Use the staged analysis pattern when the task involves review or synthesis — a Sonnet 5 structural pass followed by an Opus 5 substantive pass avoids spending frontier-effort tokens on mechanical findings.
+
+**Build work**
+
+When the task is a build — creating or modifying a system prompt version — follow `knowledge-base/build/process.md` rather than improvising. The build process has a mandatory sequence (deliberation → proposal → voting → finalization → audit → checklist → seeding) and skipping steps invalidates the audit trail. See the [Build Workflow guide](/guides/build-workflow) for the full sequence.
+
+**Tracking in-flight state**
+
+For work that spans multiple exchanges, update `conductor/tracks.md` as subtasks complete. A track entry is a lightweight progress record, not a formal deliverable — update it freely and update it often.
+
+</Step>
+
+<Step title="Phase 4: Persist">
+
+Before closing, write everything worth keeping to mem0. Persistence is not optional — it is what makes the meta-recurrent loop function. Each session that persists well makes the next session start smarter.
+
+**What to persist**
+
+- Process patterns: how the session was structured, what loading sequence was used, how many memories were found
+- Skill performance: which skill was invoked, what task it served, what quality level it produced
+- Effectiveness scores: quantified signal that future routing decisions can use
+
+**Persist format**
+
+Use the `[process]` tag for session-level patterns and the `[skill-performance]` tag for individual skill observations:
+
+```bash
+mem0 add "[process] bunnita-session-bootstrap loaded 5 memories, detected 7 skills" \
+  --user-id zachari --app-id bunnita --run-id mem0-run-MM-DD-YYYY
+
+mem0 add "[skill-performance] bunnita-committee-deliberation used for v1.6 planning, produced 3 proposals" \
+  --user-id zachari --app-id bunnita --run-id mem0-run-MM-DD-YYYY
+```
+
+Replace `MM-DD-YYYY` with the actual session date in the run ID. The run ID ties all memories from a single session together so you can retrieve or audit them as a set.
+
+**Update tracks**
+
+Write final in-progress status to `conductor/tracks.md` before closing. A track left in a mid-work state without a status note becomes invisible debt for the next session.
+
+</Step>
+
+<Step title="Phase 5: Close">
+
+A clean close takes three actions: update tracks, summarize, and log.
+
+**Update conductor/tracks.md**
+
+Write the final status of every track touched in this session. Mark completed tracks as closed. Mark blocked tracks with the blocker noted inline so the next session can decide whether to unblock or defer.
+
+**Summarize what was accomplished**
+
+Produce a brief session summary: what was started, what was completed, what was deferred, and what the current state of active work is. This summary is the handoff artifact — it is what the next session reads if it opens with a cold start.
+
+**Note blockers**
+
+Any task that could not complete because of a dependency, a missing file, or an unresolved decision is a blocker. Note blockers explicitly with enough context that the next session can act on them without re-deriving the situation.
+
+**Log session summary to mem0**
+
+```bash
+mem0 add "[process] session-close: completed X, deferred Y, blocked on Z" \
+  --user-id zachari --app-id bunnita --run-id mem0-run-MM-DD-YYYY
+```
+
+Use the same run ID as the bootstrap persist entries so the full session is retrievable as a unit.
+
+</Step>
+
+</Steps>

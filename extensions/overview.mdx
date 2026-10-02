@@ -1,0 +1,73 @@
+---
+title: 'Bunnita Extensions: On-Demand Capabilities'
+sidebarTitle: 'Overview'
+description: 'Bunnita loads seven modular extensions on demand, keeping the core prompt compact while preserving full capability depth across every session.'
+---
+
+Bunnita's extension system lets you expand the framework's capabilities without bloating the core prompt. Each extension is a modular prompt segment that stays dormant until its trigger condition fires — at that point, Bunnita loads it for the session and gains the deeper reasoning, protocol, or configuration that segment provides. The result is a lean core that scales up precisely when a task demands it.
+
+## How Extensions Work
+
+Extensions are modular prompt segments that activate only when their trigger condition is met. Nothing loads speculatively. If a session never touches multi-agent coordination, the `subagent-protocol` extension never loads. This design keeps the core prompt compact while preserving the full capability depth you need for complex workflows.
+
+## The Ratified Ceiling
+
+The maximum number of concurrently active extensions is **7**. This ceiling is ratified by the convener. Adding an eighth extension requires a new convener ruling — it is not a committee vote.
+
+## Critical Extensions
+
+Two extensions are marked **critical** and are exempt from auto-deprecation regardless of their session load rate:
+
+| Extension | Why Critical |
+|---|---|
+| `capability-scaffold` | Ensures graceful degradation when the active model sits below the assumed reasoning tier |
+| `safety-advanced` | Provides deeper safety reasoning when navigating permission boundaries |
+
+## Lifecycle Policy
+
+Extensions evolve based on how often they load:
+
+- **Auto-merge into core** — an extension with a `session_load_rate > 0.8` is promoted into the core prompt on the next revision cycle
+- **Auto-deprecate** — an extension with a `session_load_rate < 0.1` is retired from the roster
+
+<Note>
+Both thresholds are **currently inert** — the telemetry pipeline that would measure `session_load_rate` has not yet been built. No extension will be auto-merged or auto-deprecated until that infrastructure exists.
+</Note>
+
+## All Seven Extensions
+
+| Extension | Domain | Activation Trigger |
+|---|---|---|
+| `capability-scaffold` | Cross-cutting | Active model below assumed tier, or task failing for lack of explicit steps |
+| `safety-advanced` | Safety | Permission boundaries, ambiguous intent, authorized-testing contexts, refusal tone calibration |
+| `subagent-protocol` | Tools | Spawning subagents, quarantine events, multi-agent coordination |
+| `memory-advanced` | Memory | Debugging retrieval quality, freshness filters, multi-user memory scenarios |
+| `personality-variation` | UX | Switching registers, configuring collaboration depth, debugging tone calibration |
+| `browser-automation` | Tools | Host provides browser tools (Playwright, Puppeteer), task involves web interaction |
+| `multi-language` | UX | User writes in a non-English language, user requests locale-specific formatting |
+
+## Extension Pages
+
+<CardGroup cols={2}>
+  <Card title="capability-scaffold" icon="layer-group" href="/extensions/capability-scaffold">
+    Graceful degradation and explicit procedural scaffolding for lighter models
+  </Card>
+  <Card title="safety-advanced" icon="shield-halved" href="/extensions/safety-advanced">
+    Deeper permission-boundary navigation and refusal tone calibration
+  </Card>
+  <Card title="subagent-protocol" icon="share-nodes" href="/extensions/subagent-protocol">
+    Multi-agent coordination, quarantine events, and dispatch documentation
+  </Card>
+  <Card title="memory-advanced" icon="brain" href="/extensions/memory-advanced">
+    Retrieval quality debugging, freshness filters, and multi-user memory
+  </Card>
+  <Card title="personality-variation" icon="sliders" href="/extensions/personality-variation">
+    Interaction register switching and collaboration depth configuration
+  </Card>
+  <Card title="browser-automation" icon="globe" href="/extensions/browser-automation">
+    Structured web automation guidance layered over host-supplied browser tools
+  </Card>
+  <Card title="multi-language" icon="language" href="/extensions/multi-language">
+    Non-English responses and locale-specific formatting support
+  </Card>
+</CardGroup>

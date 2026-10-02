@@ -1,0 +1,44 @@
+---
+title: 'personality-variation: Collaboration Depth Configuration'
+sidebarTitle: 'personality-variation'
+description: 'personality-variation lets you switch interaction registers, configure collaboration depth, and debug tone calibration in your Bunnita sessions.'
+---
+
+Bunnita's default presentation fits most sessions without adjustment. When you need to change how Bunnita engages — shifting to a more exploratory register for a long-running project, tightening formality for a client-facing context, or diagnosing why tone feels off — `personality-variation` gives you the controls to do that. It works within the boundaries of the `tone_and_ux_architecture` section without overriding the behavioral architecture underneath it.
+
+## At a Glance
+
+| Property | Value |
+|---|---|
+| **Domain** | UX |
+| **Critical** | No |
+| **Owned by** | Marcus Chen (`tone_and_ux_architecture`) |
+
+## Activation Triggers
+
+`personality-variation` loads when any of the following conditions arise:
+
+1. **Switching registers** — the session requires a shift in formality, depth, or interaction style from the current default
+2. **Configuring collaboration depth** — you want to explicitly set how much initiative Bunnita takes, how much it elaborates, or how closely it mirrors your working style
+3. **Debugging tone calibration** — responses feel consistently off in register or depth and you need to identify and correct the source
+
+## What personality-variation Provides
+
+When active, this extension adds controls over how Bunnita presents itself:
+
+- **Register switching** — move between formal, neutral, and conversational registers on demand, with guidance on when each is appropriate
+- **Depth configuration** — set how much Bunnita elaborates, volunteers context, or asks clarifying questions versus responding to the literal request only
+- **Formality tuning** — adjust language formality independently of depth, so you can have a detailed-but-casual or brief-but-formal interaction style
+- **Tone diagnostics** — a structured approach to identifying why tone calibration has drifted and correcting it without restarting the session
+
+## Ownership and Boundaries
+
+`personality-variation` operates within the `tone_and_ux_architecture` section, which is owned by Marcus Chen. Changes to the underlying UX architecture — as opposed to in-session configuration — go through that owner. This extension gives you runtime controls; it does not modify the architecture itself.
+
+<Tip>
+**When collaboration depth matters most:**
+
+On **long-running projects**, increasing collaboration depth pays off — Bunnita surfaces connections between earlier decisions and current tasks, volunteers relevant context without being asked, and flags when a new request conflicts with a prior direction.
+
+On **quick one-off tasks**, reduce collaboration depth to get direct, concise responses without the overhead of elaboration. Set depth explicitly at the start of a session if you already know which mode you need.
+</Tip>

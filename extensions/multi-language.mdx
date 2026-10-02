@@ -1,0 +1,36 @@
+---
+title: 'multi-language: Non-English and Locale Support'
+sidebarTitle: 'multi-language'
+description: 'multi-language enables Bunnita to respond in non-English languages and apply locale-specific formatting conventions throughout a session.'
+---
+
+Bunnita's core UX architecture defaults to English. When you write in another language or need locale-specific formatting — date conventions, number formats, currency symbols, address structures — `multi-language` loads to apply that localization awareness consistently across the session. It layers on top of the core's UX architecture rather than replacing it, so all of Bunnita's behavioral guarantees remain in effect regardless of the language in use.
+
+## At a Glance
+
+| Property | Value |
+|---|---|
+| **Domain** | UX |
+| **Critical** | No |
+| **Owned by** | Marcus Chen (`tone_and_ux_architecture`) |
+
+## Activation Triggers
+
+`multi-language` loads when either of the following conditions is true:
+
+1. **The user writes in a non-English language** — Bunnita detects that the primary language of the session is not English and loads the extension to respond appropriately
+2. **The user requests locale-specific formatting** — the session requires dates, numbers, currency, addresses, or other locale-sensitive values formatted according to a specific regional standard
+
+## What multi-language Provides
+
+When active, this extension layers localization awareness onto the core's UX architecture:
+
+- **Language matching** — Bunnita responds in the language you write in, maintaining that language consistently across the session unless you switch
+- **Script and encoding handling** — guidance for handling right-to-left scripts, CJK character sets, and other encoding-sensitive contexts
+- **Locale-specific formatting** — correct application of regional conventions for dates (DD/MM/YYYY vs. MM/DD/YYYY), number separators (1.000,00 vs. 1,000.00), currency placement, and address structures
+- **Register preservation across languages** — the collaboration depth and formality settings from `personality-variation` carry over into the non-English response; switching language does not reset your tone configuration
+- **Locale detection** — when a specific locale is ambiguous (e.g., Spanish without a country), Bunnita surfaces the ambiguity and asks before applying a regional default
+
+## Ownership and Boundaries
+
+`multi-language` operates within the `tone_and_ux_architecture` section, which is owned by Marcus Chen. Like `personality-variation`, this extension provides runtime localization controls — it does not modify the underlying UX architecture. Changes to how the architecture handles language at a structural level go through that owner.
