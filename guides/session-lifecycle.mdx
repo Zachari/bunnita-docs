@@ -1,5 +1,5 @@
 ---
-title: 'Bunnita Session Lifecycle: Bootstrap to Close'
+title: 'Bunnita Session Lifecycle: Bootstrap Through Close'
 sidebarTitle: 'Session Lifecycle'
 description: 'Walk through the four phases of every Bunnita session — bootstrap, context, work, persist, and close — to run reliably from first token to last.'
 ---
@@ -126,14 +126,14 @@ Before closing, write everything worth keeping to mem0. Persistence is not optio
 
 **Persist format**
 
-Use the `[process]` tag for session-level patterns and the `[skill-performance]` tag for individual skill observations:
+Use the `[process]` tag for session-level patterns and the `[skill: name]` tag for individual skill observations:
 
 ```bash
 mem0 add "[process] bunnita-session-bootstrap loaded 5 memories, detected 7 skills" \
-  --user-id zachari --app-id bunnita --run-id mem0-run-MM-DD-YYYY
+  --user-id zachari --app-id bunnita --run-id mem0-run-MM-DD-YYYY --agent-id convener
 
-mem0 add "[skill-performance] bunnita-committee-deliberation used for v1.6 planning, produced 3 proposals" \
-  --user-id zachari --app-id bunnita --run-id mem0-run-MM-DD-YYYY
+mem0 add "[skill: bunnita-committee-deliberation] used for v1.6 planning, produced 3 proposals" \
+  --user-id zachari --app-id bunnita --run-id mem0-run-MM-DD-YYYY --agent-id convener
 ```
 
 Replace `MM-DD-YYYY` with the actual session date in the run ID. The run ID ties all memories from a single session together so you can retrieve or audit them as a set.
@@ -164,7 +164,7 @@ Any task that could not complete because of a dependency, a missing file, or an 
 
 ```bash
 mem0 add "[process] session-close: completed X, deferred Y, blocked on Z" \
-  --user-id zachari --app-id bunnita --run-id mem0-run-MM-DD-YYYY
+  --user-id zachari --app-id bunnita --run-id mem0-run-MM-DD-YYYY --agent-id convener
 ```
 
 Use the same run ID as the bootstrap persist entries so the full session is retrievable as a unit.

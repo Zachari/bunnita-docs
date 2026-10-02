@@ -1,7 +1,7 @@
 ---
-title: 'mem0 Memory Operations Quick Reference'
+title: 'mem0 Memory Operations: add, search, list, and update'
 sidebarTitle: 'Operations'
-description: 'Reference guide for mem0 add, search, list, and update operations with required identifiers, the deduplication rule, and golden backup recovery.'
+description: 'Reference for mem0 add, search, list, and update operations with required identifiers, the deduplication rule, and build seed commands.'
 ---
 
 Use this page as your go-to reference whenever you need to read from or write to the Bunnita memory graph. The four core mem0 operations — `add`, `search`, `list`, and `update` — cover every memory task you will encounter in a session. Get the identifiers right on every write, apply the deduplication rule before every `add`, and you will keep the memory graph clean and queryable across sessions.
@@ -25,13 +25,14 @@ The rule in plain terms: **search first, add only if nothing similar exists**.
 
 ### add — Write a New Memory
 
-Use `add` when your deduplication search returns no results above the 0.7 threshold.
+Use `add` when your deduplication search returns no results above the 0.7 threshold. All four identifiers are required on every write — supply `--agent-id` for the agent whose graph should receive this memory.
 
 ```bash
 mem0 add "[process] bunnita-session-bootstrap loaded 5 memories, detected 7 skills" \
   --user-id zachari \
   --app-id bunnita \
-  --run-id mem0-run-MM-DD-YYYY
+  --run-id mem0-run-MM-DD-YYYY \
+  --agent-id priya-krishnamurthy
 ```
 
 ### search — Query by Tag (User Scope)
@@ -69,14 +70,27 @@ mem0 add "[deliberation] vX.Y SHIPPED. Build at Builds/bunnita-system-prompt-vX-
   --run-id mem0-run-MM-DD-YYYY
 ```
 
+### update — Replace an Existing Memory
+
+Use `update` when a deduplication search returns a result with confidence ≥ 0.7. Replace `{memory_id}` with the ID returned by your prior `search` or `list` call.
+
+```bash
+mem0 update "{memory_id}" \
+  "[process] bunnita-session-bootstrap loaded 7 memories, detected 7 skills, T002 surfaced" \
+  --user-id zachari \
+  --app-id bunnita \
+  --run-id mem0-run-MM-DD-YYYY \
+  --agent-id priya-krishnamurthy
+```
+
 ## Read vs. Write Scope
 
 Reads may use the minimum scope necessary for the query — omit `--agent-id` when you want user-scoped results, or supply a specific agent ID when you want that agent's graph. Writes are stricter: every `add` and every `update` must carry all four identifiers (`--app-id`, `--run-id`, `--user-id`, and `--agent-id` where applicable). There is no exception to this rule for writes.
 
 ## Golden Backups
 
-The `mem0_backup/` directory holds golden backups of the memory graph. These backups exist for recovery reference — if a mis-scoped write or accidental deletion corrupts a partition, use the golden backup as your source of truth for restoring the correct state. Do not treat `mem0_backup/` as a working directory; read from it only during recovery.
+Maintain versioned golden backups of your memory graph alongside each build. These backups exist for recovery reference — if a mis-scoped write or accidental deletion corrupts a partition, use the golden backup as your source of truth for restoring the correct state.
 
 <Warning>
-  Every mem0 write — whether `add` or `update` — must include all four identifiers: `--app-id bunnita`, `--run-id mem0-run-MM-DD-YYYY`, `--user-id zachari`, and `--agent-id {agent_name}` (or omit `--agent-id` only for user-scoped writes). Missing any one of these on a write silently routes the memory to the wrong scope. Recovery requires a manual audit against `mem0_backup/` and there is no automatic rollback.
+  Every mem0 write — whether `add` or `update` — must include all four identifiers: `--app-id bunnita`, `--run-id mem0-run-MM-DD-YYYY`, `--user-id zachari`, and `--agent-id {agent_name}` (or omit `--agent-id` only for user-scoped writes). Missing any one of these on a write silently routes the memory to the wrong scope. Recovery requires a manual audit against your golden backups and there is no automatic rollback.
 </Warning>

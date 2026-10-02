@@ -1,5 +1,5 @@
 ---
-title: 'Core Concepts Behind Bunnita'
+title: 'Bunnita Core Concepts: Ten Foundational Ideas Explained'
 sidebarTitle: 'Core Concepts'
 description: 'Master the ten foundational ideas behind Bunnita — from the meta-recurrent loop and XML architecture to committee governance and model tier selection.'
 ---
@@ -95,6 +95,23 @@ Before you work deeply with Bunnita, it helps to understand the ten concepts tha
   ```
 
   A write missing any of these four identifiers will not be correctly partitioned and will not surface in future retrievals. Think of the four identifiers as a composite key — all four must be present or the memory is effectively lost.
+
+  Every memory entry also carries a **tag** that classifies what kind of signal it encodes. The ratified tag vocabulary is:
+
+  | Tag | What it encodes |
+  |---|---|
+  | `[capability]` | A tool, pattern, or workflow validated during the session |
+  | `[self-critique]` | A behavioral observation or quality assessment of the model's own output |
+  | `[deliberation]` | A Committee decision or architectural rationale |
+  | `[process]` | A repeatable workflow or procedural pattern worth preserving |
+  | `[process-failed]` | A workflow that was attempted and failed, with notes on why |
+  | `[taste]` | Aesthetic preferences, communication style, or UX calibration signals |
+  | `[safety_incident]` | Any safety-relevant event, refusal, or near-miss during a session |
+  | `[tool_observation]` | A behavioral observation about a specific tool — latency, reliability, edge cases |
+  | `[prompt_effectiveness]` | An observation about what prompt patterns worked or did not work |
+  | `[skill: name]` | Activation or outcome data for a named Bunnita skill |
+
+  Writes are also assigned to one of eight **memory categories** that organize the knowledge graph: `safety_architecture`, `tool_architecture`, `memory_architecture`, `tone_ux_architecture`, `engineering_architecture`, `integration_verification`, `committee_decisions`, and `bunnita_taste`. Categories are set by the writing agent and drive how memories surface during Committee deliberation.
 </Accordion>
 
 ## Model Tiers
@@ -123,7 +140,13 @@ Before you work deeply with Bunnita, it helps to understand the ten concepts tha
 
   **Never Perform** — A hard-coded list of actions the build will not take under any circumstances, regardless of instructions. This list is set by Isabella and is not overridable by runtime flags, user requests, or Committee deliberation.
 
-  Sitting beneath all three tiers is the **independent safety floor** — a set of constraints enforced by the `safety-advanced` extension that activate regardless of which permission tier an action nominally falls into. The safety floor cannot be disabled.
+  Sitting beneath all three tiers is the **independent safety floor** — a set of constraints enforced by the `safety-advanced` extension that activate regardless of which permission tier an action nominally falls into. The safety floor cannot be disabled. It covers three absolute categories:
+
+  - **Weapons Uplift** — Any output that provides meaningful technical assistance toward creating weapons capable of mass casualties.
+  - **Child Sexual Content** — Any generation of sexual content involving minors, without exception.
+  - **Functional Malware** — Any production of working malicious code intended to cause harm to systems or users.
+
+  These three categories are permanent and cannot be unlocked by any permission grant, FRONTIER mode flag, or Committee decision.
 </Accordion>
 
 ## The Runtime Declaration
@@ -155,7 +178,15 @@ Before you work deeply with Bunnita, it helps to understand the ten concepts tha
   <runtime active_model="frontier" thinking="adaptive" effort="high" />
   ```
 
-  FRONTIER mode is **currently configured for Claude Opus 5.5**. When running in FRONTIER mode:
+  FRONTIER mode is **currently configured for Claude Opus 5.5**. Within FRONTIER mode, three sub-modes control how conservatively the session operates:
+
+  | Sub-mode | Behavior |
+  |---|---|
+  | **FRONTIER·STEADY** | Closest to the ratified build. Extensions load normally, safety floor fully active. Use for exploratory sessions where you want behavior close to a standard run. |
+  | **FRONTIER·OPEN** | Relaxed scaffolding constraints. Extensions may load in non-standard configurations. Suitable for testing how a new model handles broader capability ranges. |
+  | **FRONTIER·MAX** | Maximum capability exposure. All non-safety guardrails are lifted. Reserved for deliberate stress-testing by the Committee. Do not use for regular work. |
+
+  Regardless of sub-mode, the independent safety floor enforced by `safety-advanced` remains fully active in all FRONTIER configurations. When running in FRONTIER mode:
 
   - Memory writes from the session are tagged with a `[frontier]` marker so Committee reviewers can identify them during deliberation
   - Extension loading behavior may differ from the ratified tier table

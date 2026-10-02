@@ -13,7 +13,7 @@ The graph is partitioned by entity. Every write targets a specific entity, and e
 ```
 Entities
 ├── bunnita-v1          committee decisions
-├── zachari             user scope (taste, preferences)
+├── your-user-id        user scope (taste, preferences)
 ├── isabella-marchetti
 ├── daniel-okonkwo
 ├── priya-krishnamurthy
@@ -22,7 +22,7 @@ Entities
 └── renata-ferreira
 ```
 
-The `bunnita-v1` entity holds decisions made at the committee level — ratified changes, version-frozen states, convener rulings. The `zachari` entity holds user-scoped memory: taste, preferences, recurring patterns in how the user works. Each committee member's entity holds observations, learnings, and refinements that belong to their domain.
+The `bunnita-v1` entity holds decisions made at the committee level — ratified changes, version-frozen states, convener rulings. The user entity holds user-scoped memory: taste, preferences, recurring patterns in how the user works. Each committee member's entity holds observations, learnings, and refinements that belong to their domain.
 
 ## Committee-owned categories
 
@@ -62,34 +62,42 @@ Before writing any memory, search first. This is not a suggestion — it is the 
 
 **Search example — retrieving safety architecture observations:**
 
-```python
-client.search(
-    query="safety floor refusal tone calibration",
-    user_id="isabella-marchetti",
-    app_id="bunnita",
-    agent_id="bunnita-core",
-    run_id="mem0-run-06-15-2025",
-    filters={"category": "safety_architecture"}
-)
+```bash
+mem0 search "safety floor refusal tone calibration" \
+  --user-id isabella-marchetti \
+  --app-id bunnita \
+  --agent-id bunnita-core \
+  --run-id mem0-run-06-15-2025 \
+  --filter '{"AND": [{"categories": {"in": ["safety_architecture"]}}]}'
 ```
 
 **Write example — recording a new tool architecture observation:**
 
-```python
-client.add(
-    messages=[{
-        "role": "assistant",
-        "content": "Browser automation extension requires explicit host-capability confirmation before loading. Silent load on ambiguous tool signals causes verification failures."
-    }],
-    user_id="daniel-okonkwo",
-    app_id="bunnita",
-    agent_id="bunnita-core",
-    run_id="mem0-run-06-15-2025",
-    metadata={
-        "category": "tool_architecture",
-        "version": "v1.7"
-    }
-)
+```bash
+mem0 add "Browser automation extension requires explicit host-capability confirmation before loading. Silent load on ambiguous tool signals causes verification failures." \
+  --user-id daniel-okonkwo \
+  --app-id bunnita \
+  --agent-id bunnita-core \
+  --run-id mem0-run-06-15-2025 \
+  --metadata '{"category": "tool_architecture", "version": "v1.7"}'
+```
+
+**List example — auditing all memories for a committee member:**
+
+```bash
+mem0 list \
+  --user-id priya-krishnamurthy \
+  --app-id bunnita \
+  --agent-id bunnita-core \
+  --category memory_architecture \
+  --output json
+```
+
+**Update example — revising an existing memory by ID:**
+
+```bash
+mem0 update <memory-id> \
+  "Updated: four-identifier requirement applies to all read and write operations without exception."
 ```
 
 ## What memory enables

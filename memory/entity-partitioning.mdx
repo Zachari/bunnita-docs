@@ -1,7 +1,7 @@
 ---
-title: 'Memory Entity Partitioning in Bunnita'
+title: 'Memory Entity Partitioning in Bunnita: Four Identifiers'
 sidebarTitle: 'Entity Partitioning'
-description: 'Learn how Bunnita isolates agent memories with four-identifier attribution on every mem0 operation and how to query across entity graphs.'
+description: 'Learn how Bunnita isolates agent memories using four-identifier attribution on every mem0 operation and how to query across entity graphs.'
 ---
 
 Entity partitioning keeps each agent's memory graph isolated from every other agent's while still allowing cross-graph queries when you need a broader view. Bunnita achieves this through mem0's identifier system: every operation you perform must carry all four identifiers so that memories land in exactly the right scope and are never silently mixed with another agent's data.
@@ -74,5 +74,5 @@ mem0 search "[taste]" \
 ```
 
 <Warning>
-  Always include `--app-id bunnita` on every mem0 operation. If you omit it, mem0 falls back to a default application scope and your memory leaks into the wrong partition. Recovering mis-scoped memories requires a manual audit against the golden backups in `mem0_backup/`. There is no automatic rollback.
+  Always include `--app-id bunnita` on every mem0 operation. If you omit it, mem0 falls back to a default application scope and your memory leaks into the wrong partition. Recovering mis-scoped memories requires a manual audit against your golden backups. There is no automatic rollback.
 </Warning>

@@ -1,7 +1,7 @@
 ---
-title: 'FRONTIER Mode: Testing New AI Models with Bunnita'
+title: 'FRONTIER Mode: Testing Frontier AI Models with Bunnita'
 sidebarTitle: 'FRONTIER Mode'
-description: 'Run the full Bunnita stack on frontier models outside the ratified five to test behavior, gather evidence, and explore capability — all without touching production.'
+description: 'Run the complete Bunnita stack on an unratified frontier model to test behavior and gather capability evidence without touching production memory.'
 ---
 
 FRONTIER mode runs the complete Bunnita stack — all skills, all constraints, all memory attribution — on a single frontier model that has not yet been ratified into the standard five. It exists for testing and analysis: you want to know how a new model behaves under the full Bunnita architecture before deciding whether to ratify it. FRONTIER mode gives you that answer without contaminating your production memory or relaxing the constraints that make production reliable. It is off by default and only Zachari can turn it on.
@@ -70,7 +70,7 @@ Memories written during a FRONTIER session carry `frontier=` and `model_id=` fie
 
 ```bash
 mem0 add "[process] frontier=open model_id=opus-5.5 — capability scan returned 7 skills, deliberation produced 2 proposals" \
-  --user-id zachari --app-id bunnita --run-id mem0-run-MM-DD-YYYY
+  --user-id zachari --app-id bunnita --run-id mem0-run-MM-DD-YYYY --agent-id convener
 ```
 
 This tagging matters: FRONTIER results are exploratory evidence, not ship evidence. A strong FRONTIER result tells you the model can run the stack — it does not by itself constitute grounds for ratification. The standard build process governs ratification.

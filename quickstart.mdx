@@ -1,5 +1,5 @@
 ---
-title: 'Get Started with Bunnita in Four Steps'
+title: 'Quickstart: Adopt the Build and Run Your First Session'
 sidebarTitle: 'Quickstart'
 description: 'Adopt the frozen v1.7 build, declare your runtime, scan capabilities, retrieve your memory graph, and run your first fully scaffolded Bunnita session.'
 ---
@@ -69,14 +69,22 @@ Before you begin, confirm you have the following:
     Pull your relevant memories from the mem0 knowledge graph before you begin task work. Run targeted searches against the two most important memory categories: your **taste profile** (preferences, aesthetic signals, working style) and your **capability map** (what tools, patterns, and workflows have been validated across prior sessions).
 
     ```bash
-    mem0 search "[taste]" --user-id zachari --app-id bunnita --run-id mem0-run-MM-DD-YYYY
+    mem0 search "[taste]" \
+      --user-id <your-user-id> \
+      --app-id bunnita \
+      --run-id mem0-run-MM-DD-YYYY \
+      --agent-id bunnita-core
     ```
 
     ```bash
-    mem0 search "[capability]" --user-id zachari --app-id bunnita --run-id mem0-run-MM-DD-YYYY
+    mem0 search "[capability]" \
+      --user-id <your-user-id> \
+      --app-id bunnita \
+      --run-id mem0-run-MM-DD-YYYY \
+      --agent-id bunnita-core
     ```
 
-    Replace `MM-DD-YYYY` with today's date. If this is your first session, both searches will return empty — that is expected. Your graph will populate as you close sessions and persist metadata. You can also search for `[pattern]`, `[safety]`, or `[ux]` tagged memories depending on what context is most relevant to the work ahead.
+    Replace `<your-user-id>` with your mem0 user identifier and `MM-DD-YYYY` with today's date. If this is your first session, both searches will return empty — that is expected. Your graph will populate as you close sessions and persist metadata. You can also search for `[process]`, `[self-critique]`, or `[tool_observation]` tagged memories depending on what context is most relevant to the work ahead.
   </Step>
 
   <Step title="Do Your Work, Then Persist and Close">
@@ -86,8 +94,8 @@ Before you begin, confirm you have the following:
 
     ```bash
     mem0 add \
-      "[pattern] Structured diff review: read full diff before commenting, group feedback by impact level, flag safety concerns first" \
-      --user-id zachari \
+      "[process] Structured diff review: read full diff before commenting, group feedback by impact level, flag safety concerns first" \
+      --user-id <your-user-id> \
       --app-id bunnita \
       --run-id mem0-run-MM-DD-YYYY \
       --agent-id bunnita-core

@@ -1,7 +1,7 @@
 ---
-title: 'Bunnita Build Workflow: From Proposal to Ship'
+title: 'Bunnita Build Workflow: From Proposal to Shipped Build'
 sidebarTitle: 'Build Workflow'
-description: 'Walk the full Bunnita build workflow — committee deliberation through mem0 seeding and convener approval — so every build ships with a clean audit trail.'
+description: 'Walk the Bunnita build workflow — committee deliberation, mem0 seeding, and convener approval — so every build ships with a complete audit trail.'
 ---
 
 Every Bunnita system prompt version goes through the same mandatory sequence before it ships. The sequence exists because previous builds that skipped steps — most notably v1.6's self-reported audit — produced defects that had to be carried forward into subsequent versions' notes rather than caught at the gate. Follow every step in order. Skipping or combining steps does not accelerate the build; it invalidates the audit trail and creates technical debt that future versions inherit.
@@ -44,6 +44,11 @@ Each stage produces artifacts that the next stage depends on. Deliberation produ
 
 **mem0 Seeding** — Write build decisions to mem0 with `[deliberation]` tags and full entity partitioning. Seeding makes the build's rationale retrievable in future sessions so future committee deliberations can reference prior decisions without re-deriving them.
 
+```bash
+mem0 add "[deliberation] vX.Y ship decision: <summary of key rationale and tradeoffs>" \
+  --user-id zachari --app-id bunnita --run-id mem0-run-MM-DD-YYYY --agent-id convener
+```
+
 **Next Iteration** — Document what was considered but deferred: proposals that did not achieve a mandate, issues that were discovered too late to address in this build, and known improvements for the next cycle.
 
 ## The Pre-Ship Checklist
@@ -60,7 +65,7 @@ Complete all eleven items before seeding. Each item is a gate, not a suggestion.
 
 5. **Agent files updated** — All six agent files carry the new `prompt_version` field. A missed agent file means that agent operates on a stale version reference, which breaks attribution and routing.
 
-6. **Build decision seeded to mem0** — The deliberation record is in mem0 with the `[deliberation]` tag and full entity partitioning (`--user-id`, `--app-id`, `--run-id`).
+6. **Build decision seeded to mem0** — The deliberation record is in mem0 with the `[deliberation]` tag and full entity partitioning (`--user-id`, `--app-id`, `--run-id`, `--agent-id`).
 
 7. **Agent isolation verified** — Each agent's mem0 scope returns only that agent's memories. Verify by querying each agent's scope individually and confirming no cross-contamination.
 
