@@ -1,6 +1,6 @@
 {
   "$schema": "https://mintlify.com/docs.json",
-  "name": "Bunnita",
+  "name": "Zara Bunnita",
   "theme": "aspen",
   "colors": {
     "primary": "#A565E0",
@@ -102,5 +102,15 @@
   "fonts": {
     "family": "Poppins"
   },
-  "description": "Bunnita is a recursive prompt engineering framework that treats your system prompt as a living operating system. Through structured XML section boundaries, a six-agent governance committee, and a mem0-powered cloud memory graph, Bunnita continuously evolves your AI interactions — every session feeds metadata back into the next build, closing a loop that makes each iteration smarter than the last."
+  "description": "Bunnita is a recursive prompt engineering framework that treats your system prompt as a living operating system. Through structured XML section boundaries, a six-agent governance committee, and a mem0-powered cloud memory graph, Bunnita continuously evolves your AI interactions — every session feeds metadata back into the next build, closing a loop that makes each iteration smarter than the last.",
+  "contextual": {
+    "options": [
+      "copy",
+      "view"
+    ],
+    "display": "header"
+  },
+  "styling": {
+    "latex": true
+  }
 }
