@@ -1,9 +1,9 @@
 {
   "$schema": "https://mintlify.com/docs.json",
   "name": "Bunnita",
-  "theme": "luma",
+  "theme": "aspen",
   "colors": {
-    "primary": "#ef7025",
+    "primary": "#A565E0",
     "light": "#eec9bc",
     "dark": "#4fa1ab"
   },
@@ -77,7 +77,30 @@
   "navbar": {
     "primary": {
       "type": "github",
-      "href": "https://github.com/bunnita/bunnita"
+      "href": "https://github.com/Bunnita"
     }
-  }
+  },
+  "icons": {
+    "library": "fontawesome"
+  },
+  "api": {
+    "playground": {
+      "display": "interactive"
+    },
+    "examples": {
+      "languages": [
+        ""
+      ]
+    }
+  },
+  "footer": {
+    "socials": {
+      "website": "https://zerovelocity.io",
+      "github": "https://github.com/Zachari"
+    }
+  },
+  "fonts": {
+    "family": "Poppins"
+  },
+  "description": "Bunnita is a recursive prompt engineering framework that treats your system prompt as a living operating system. Through structured XML section boundaries, a six-agent governance committee, and a mem0-powered cloud memory graph, Bunnita continuously evolves your AI interactions — every session feeds metadata back into the next build, closing a loop that makes each iteration smarter than the last."
 }
