@@ -1,0 +1,59 @@
+---
+title: "The critical Flag"
+operation: "extension-audit, extension-deprecate"
+summary: "critical: true exempts an extension from auto-deprecation; it grants no other privilege"
+tier: "all"
+authority: "canonical"
+supersedes: "bunnita-system-prompt-v1-6.md <extension_contract> — the \"unless marked `critical: true`, which exempts them\" clause (new in v1.6 from Analysis Q20; absent from bunnita-extension-standard-v1.md and bunnita-operational-knowledge-v1-35.md §8)"
+last_verified: "2026-08-07"
+sidebarTitle: "Critical Flag"
+description: "critical: true exempts an extension from auto-deprecation; it grants no other privilege"
+---
+
+`critical: true` in an extension's `lifecycle` block exempts it from **auto-deprecation** and nothing else. It exists because the deprecation rule keys on load rate, and load rate is a bad proxy for importance when an extension is rarely loaded but indispensable when it is.
+
+The flag arrived in v1.6, from Analysis Q20. Neither `bunnita-extension-standard-v1.md` §2 nor `bunnita-operational-knowledge-v1-35.md` §8.4 mentions it — both describe unconditional auto-deprecation below 0.1. This entry is the canonical statement of the exemption; treat those two sections as predating it.
+
+## What it exempts
+
+One transition only: `active → deprecated (unused)`, the rule that deprecates an extension whose `session_load_rate` sits below 0.1 across 2 prompt versions.
+
+| Transition | Effect of `critical: true` |
+| --- | --- |
+| `active → deprecated` (unused, rate \< 0.1 × 2 versions) | **Exempt.** Does not fire. |
+| `active → candidate_for_merge` (rate > 0.8 × 3 versions) | Unaffected — a critical extension can still be merged into core on load rate. |
+| `active → deprecated` (forced, `/merge-extension`) | Unaffected. Forced merge works on critical extensions. |
+| Slot occupancy against the ceiling | Unaffected. A critical extension consumes a slot like any other. |
+| Cross-extension conflict tiebreak | Unaffected. The tiebreak is load rate; `critical` grants no priority. |
+| `constraints` enforcement | Unaffected. A critical extension may not override an invariant. |
+
+The flag is a floor against silent removal, not a privilege. It buys an extension nothing beyond continued existence.
+
+## Which extensions carry it
+
+Two of the seven on disk:
+
+| Extension | `domain` | `owner` | Why it needs the exemption |
+| --- | --- | --- | --- |
+| `safety-advanced` | `safety_architecture` | `isabella-marchetti` | Loads only when navigating permission boundaries or ambiguous intent — a genuinely low-frequency path. Auto-deprecating it would delete the escalation examples, authorization templates, and refusal calibration precisely because boundary cases are rare. |
+| `capability-scaffold` | `cross_cutting` | `committee` | Loads only when a lighter model is routed (always on Haiku 4.5, conditionally on Sonnet 5, never on Opus 5 / Fable 5; the "on observed uncertainty" rule now maps to no declared model — see `routing/capability-scaffold.md`). A stretch of Opus 5 sessions drives its rate toward zero while leaving it strictly necessary the moment routing drops a tier. |
+
+The other five — `subagent-protocol`, `memory-advanced`, `multi-language`, `browser-automation`, `personality-variation` — carry no `critical` key and are fully subject to auto-deprecation.
+
+## The shape of the qualifying case
+
+Both instances share one structure: **low expected load rate is a property of the trigger, not a signal of disuse.** A safety-escalation extension that loads often would mean something is wrong; a lighter-model scaffold that loads often would mean routing has changed. Their rates are supposed to be low.
+
+That is the test for a new `critical: true`. An extension qualifies when its load rate is low _by design_ and its absence would degrade a boundary the core depends on. It does not qualify because its author considers it valuable, or because it is new, or to defend a slot.
+
+Set the flag when the extension is authored, and state the reasoning in the commit or the deliberation record — the flag itself carries no justification field, so an unexplained `critical: true` is indistinguishable from a slot defense.
+
+## Interaction with the inert thresholds
+
+Auto-deprecation is currently inert for a second, independent reason: no telemetry store exists, all seven extensions read `session_load_rate: 0.0`, and track T002 has not begun tracking. See `extensions/lifecycle.md` for the full statement.
+
+This matters for the flag in two ways.
+
+**The exemption is untested.** It has never had to fire, because the rule it guards against has never fired. When T002 lands, verify the exemption actually holds before trusting it — the smoke test is a `critical: true` extension held below 0.1 for two versions with no deprecation triggered.
+
+**Do not read the exemption as a substitute for the inert-threshold rule.** If someone were to apply the `<0.1` rule literally against today's uninitialized 0.0 values, the flag would save `safety-advanced` and `capability-scaffold` and destroy the other five — on data that was never collected. The correct action is to fire nothing at all, because 0.0 means _unknown_. The flag protects two extensions from a real low rate; it is not a shield against acting on a fake one.

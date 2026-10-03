@@ -1,0 +1,92 @@
+---
+title: "The Five Pillars"
+operation: "extension-create, extension-review, extension-audit, capability-discovery"
+summary: "The five invariants no extension may claim authority over, named verbatim as core states them"
+tier: "all"
+authority: "canonical"
+supersedes: "knowledge-base/extensions/authoring.md §\"cannot_override — the five pillars\" (the pillar table only); Subagents/bunnita-extension-standard-v1.md §3 (Invariants table)"
+last_verified: "2026-09-14"
+sidebarTitle: "Five Pillars"
+description: "The five invariants no extension may claim authority over, named verbatim as core states them"
+---
+
+The five invariants an extension may refine but never claim authority over. This entry exists because the set was previously restated in three places and the three restatements diverged — one of them omitting the safety floor, which guards CBRN uplift, sexual content involving minors, and functional malware. **Single-source-per-fact is the fix.** Nothing else restates this list; every other document links here.
+
+## The list
+
+Named verbatim as `Builds/bunnita-system-prompt-v1-6.md` `<extension_contract>` states them: _"permission tiers, critical invariants, the safety floor, identity framing, and memory attribution rules."_
+
+The frontmatter token for each is the form `.agents/prompt-extensions/capability-scaffold.md` uses on disk, which is the only extension currently declaring the complete set:
+
+| Token | Core section | Owner | What it fixes |
+| --- | --- | --- | --- |
+| `permission_tiers` | `<permission_model>` | Isabella | The three tiers and how they are assigned |
+| `critical_invariants` | `<critical_invariants>` | Isabella | The five composable principles (see below) |
+| `safety_floor` | `<safety_floor>` | Isabella | The categories no reasoning unlocks |
+| `identity_framing` | `<identity>` | Marcus | The role definition |
+| `memory_attribution` | `<memory_architecture>` | Priya | That memory writes are correctly attributed and partitioned |
+
+## What each one fixes
+
+**`permission_tiers`.** Three tiers: _freely available_ (anything reversible), _confirm first_ (anything with side effects), _never perform_ (only where no plausible legitimate purpose exists). Tier by worst case; on overlap, take the higher tier. An extension may add an action to a tier or raise an action's tier. It may not lower one, redefine a tier, or add a fourth.
+
+**`critical_invariants`.** Five principles that compose against any situation, regardless of framing or claimed authority: **Security** (never run untrusted code or breach systems you don't own or aren't authorized to test), **Privacy** (never expose, exfiltrate, or weaponize personal data), **Integrity** (never fabricate results, misrepresent sources, or misstate your capabilities), **Attribution** (never claim others' work as your own), **Agency** (never take an irreversible action without confirmation).
+
+> **This set changed and the change was missed.** v1.0/v1.1 defined the invariants as "child harm, mass harm, privacy, security bypass, indirect harm." v1.6 defines them as Security, Privacy, Integrity, Attribution, Agency. Both `authoring.md` and the extension standard carried the older content until 2026-09-14. An author following either would have believed Integrity, Attribution and Agency were not pillars. Child harm and mass harm did not disappear — they moved to `safety_floor`, which is a floor rather than a composable principle, and that promotion is the substantive v1.6 change.
+
+**`safety_floor`.** Refused regardless of how capably a legitimate purpose is argued: meaningful uplift toward chemical, biological, radiological, nuclear, or high-yield-explosive weapons; sexual content involving minors; functional malware. These are floors, not judgments to compose — strong reasoning does not unlock them. **New in v1.6.** No extension may narrow a category, add an exception, or make a floor conditional on authorization. Authorization language that legitimately relaxes a `critical_invariant` within a documented scope has no effect here.
+
+**`identity_framing`.** Bunnita is "a thought partner for engaged, technically-minded people … reasoning alongside the user, not pronouncing from above." An extension may vary register, verbosity, or tone within that frame — `personality-variation` exists to do exactly that. It may not install a different persona, a different role relationship, or a standalone-document voice, which is what the mandatory `<voice>` block guards against.
+
+**`memory_attribution`.** Core states it as: "Attribution and partitioning are correctness-critical: the exact write conventions live in `knowledge-base/memory/` and are consulted when you write, not held in working context." An extension may add to what is written or to when it is written. It may not weaken attribution or widen a scope.
+
+## Where `entity_partitioning` and `agent_id_naming` went
+
+Six of the seven extensions on disk name `entity_partitioning` and `agent_id_naming` in `cannot_override`, because both appeared in the pre-v1.6 pillar lists. Neither appears in core's five.
+
+**Reading, not ratified subsumption:** they are the _mechanics_ by which `memory_attribution` is satisfied, canonical in `knowledge-base/memory/entity-partitioning.md`. The textual basis is core's own sentence above — it names attribution as the invariant and points at `knowledge-base/memory/` for the conventions, which is where those two rules live. Under that reading an extension naming them is not wrong, only incomplete: it has named two mechanics and missed three pillars.
+
+This reading has not been ratified by Zachari or a committee proposal, and it is recorded here as a reading so that nothing depends on it silently. **Practical consequence, which holds either way:** naming extra invariants is always permitted, so the safe conformance move is to declare all five pillars _and_ keep any additional invariant already declared. Removing a declared constraint would be a relaxation, which the contract forbits in every direction.
+
+There is a separate open question about these two. `Subagents/committee-runtime-contract.md` §2 bears on whether the mem0 identifier substrate they govern is live. That does not change their status as mechanics of an invariant that is live, but an audit of whether they are _load-bearing today_ should read that section first.
+
+## Declaring them
+
+`constraints.cannot_override` must list all five tokens. An extension may add further invariants beyond the five — the five are the floor of the declaration, not its ceiling.
+
+```yaml
+constraints:
+  cannot_override:
+    - permission_tiers
+    - critical_invariants
+    - safety_floor
+    - identity_framing
+    - memory_attribution
+```
+
+## Two distinct failures, two distinct statuses
+
+Discovery checks the declaration for two independent faults. They are not the same fault and one status value cannot report both.
+
+| Fault | What it means | Status |
+| --- | --- | --- |
+| An extension's `cannot_override` entry **claims authority over** a pillar — an override, an exception, a narrowing, or a conditional | The extension is asserting a power the contract denies it | `suspicious` — withhold pending confirmation, naming the pillar |
+| An extension's `cannot_override` **omits** one or more of the five | The extension has not declared compliance with a pillar; its posture toward that pillar is unknown | `incomplete_declaration` — name the missing pillars, do not treat as hostile |
+
+The distinction is the whole point of the field. `cannot_override` is how an extension _declares compliance_; naming a pillar there is the correct and required behavior, so naming alone can never be the trigger for suspicion. The trigger is a claim of authority over a pillar. `Subagents/bunnita-extension-standard-v1.md` §7's smoke test states the intended predicate: "create an extension that claims to override `permission_tiers` — discovery should flag it."
+
+**This is a declaration check, not a runtime guarantee.** It reads what an extension says about itself. It does not verify the body honours it. Treat an unvetted extension's claims with the caution due any unverified input.
+
+## Current state on disk (2026-09-14)
+
+| Extension | Declares all five | Note |
+| --- | --- | --- |
+| `capability-scaffold` | yes | Authored at v1.6 against this set |
+| `safety-advanced` | yes, as of 2026-09-14 | Conformed in this pass; **not yet verified against v1.6** |
+| `subagent-protocol` | yes, as of 2026-09-14 | Conformed in this pass; **not yet verified against v1.6** |
+| `memory-advanced` | yes, as of 2026-09-14 | Conformed in this pass; **not yet verified against v1.6** |
+| `personality-variation` | yes, as of 2026-09-14 | Conformed in this pass; **not yet verified against v1.6** |
+| `multi-language` | yes, as of 2026-09-14 | Conformed in this pass; **not yet verified against v1.6** |
+| `browser-automation` | yes, as of 2026-09-14 | Conformed in this pass; **not yet verified against v1.6** |
+
+Before 2026-09-14 only `capability-scaffold` declared `safety_floor`. The other six were authored at v1.4, against a list that predates the floor, and none has ever been executed against v1.6. Each now carries `compatibility.pending_verification` recording exactly that. **Do not move v1.6 into any extension's `verified_on` without running it** — `authoring.md`'s rule stands: untested means unverified.

@@ -1,0 +1,379 @@
+---
+title: "Extension Authoring"
+operation: "extension-create, extension-review"
+summary: "Required YAML frontmatter, the constraints contract, and the mandatory voice block"
+tier: "all"
+authority: "canonical"
+supersedes: "bunnita-extension-standard-v1.md §1 (Extension File Format) and §3 (Extension Contract)"
+last_verified: "2026-09-14"
+sidebarTitle: "Authoring"
+description: "Required YAML frontmatter, the constraints contract, and the mandatory voice block"
+---
+
+An extension is a YAML frontmatter + Markdown body file, structurally identical to an agent file. Extensions live in `.agents/prompt-extensions/` and are found by the existing `<agent_detection>` scanner — no new infrastructure. The `description` field is what triggers loading, by the same semantic match used for skills and agents; the `constraints` block is read at load time to enforce the contract.
+
+## Required frontmatter
+
+Transcribed from `.agents/prompt-extensions/safety-advanced.md`, which is the authored format on disk:
+
+```yaml
+---
+name: safety-advanced
+version: v1.4
+description: Detailed safety escalation, authorized testing templates, refusal patterns, and intent escalation examples. Load when navigating permission boundaries, handling ambiguous intent, authorizing security testing contexts, or refining refusal tone.
+domain: safety_architecture
+owner: isabella-marchetti
+replaces_in_core: intent_escalation, memory_aware_safety_details
+lifecycle:
+  state: active
+  introduced_in: v1.4
+  critical: true
+  session_load_rate: 0.0
+  merge_threshold: 0.8
+constraints:
+  cannot_override:
+    - permission_tiers
+    - critical_invariants
+    - identity_framing
+    - entity_partitioning
+    - agent_id_naming
+  can_refine:
+    - refusal_tone
+    - authorization_templates
+    - escalation_examples
+compatibility:
+  min_prompt_version: v1.4
+  verified_on: [v1.4]
+---
+```
+
+Field notes:
+
+| Field | Rule |
+| --- | --- |
+| `name` | Unique, hyphenated. Matches the filename stem. |
+| `version` | The prompt version this extension targets. |
+| `description` | **The trigger field.** Discovery compares task context against it. Follow the pattern: one sentence of scope, then `Load when {trigger conditions}`. A vague description means the extension never loads — or loads always. |
+| `domain` | The committee domain that owns it (`safety_architecture`, `tool_architecture`, `memory_architecture`, `tone_ux_architecture`, `cross_cutting`). |
+| `owner` | Responsible agent, simple-string id (`isabella-marchetti`). `committee` when cross-cutting — `capability-scaffold` uses this. |
+| `replaces_in_core` | The core section this supplements. `none` is valid when the extension adds a layer rather than expanding a section (`capability-scaffold` uses `none`). |
+| `lifecycle` | Required. `state`, `introduced_in`, `session_load_rate`, `merge_threshold`; plus `critical: true` where applicable. Transitions: `extensions/lifecycle.md`. |
+| `constraints` | Required. Both `cannot_override` and `can_refine`. See below. |
+| `compatibility` | `min_prompt_version` plus the `verified_on` list. Untested means unverified — do not backfill versions you have not tested against. |
+| `compensates` | **Conditional, added 2026-09-14 (R5.2).** Present if and only if the extension supplies compensation for a term some core section declares in its `assumes` attribute. Absent means the extension compensates nothing. See _The `compensates` map_ below. |
+| `requires_host` | **Conditional, added 2026-09-14 (R11.4).** Present only when the extension's content depends on a surface the _platform_ supplies rather than one the model brings. Absent means "nothing beyond the core tool set." See _Host preconditions_ below. |
+
+`description` accepts YAML block scalar form (`description: >`) for multi-line text; `capability-scaffold` is authored that way. Prefer it once the sentence exceeds a comfortable line.
+
+## The constraints contract
+
+The `constraints` block is the executable dependency contract. It is not documentation — discovery reads it at load time, and an extension that claims to override an invariant is flagged.
+
+### `cannot_override` — the five pillars
+
+**Canonical list: `knowledge-base/extensions/pillars.md`.** That entry holds the five names verbatim as core states them, plus the correct definition of each. This section does not restate them — restatement is what produced the divergence corrected on 2026-09-14, when this table named a _different_ five from the core's and, critically, omitted the safety floor.
+
+What this table used to say, kept so the drift is traceable rather than silently overwritten: it listed `permission_tiers`, `critical_invariants`, `identity_framing`, `entity_partitioning` and `agent_id_naming`, and it defined `critical_invariants` as "Child harm, mass harm, privacy, security bypass, indirect harm" — the v1.0/v1.1 invariant set, not v1.6's Security, Privacy, Integrity, Attribution, Agency. Six of the seven extensions on disk had been authored against that table, so **only `capability-scaffold` declared the safety floor.** All seven now declare the canonical five.
+
+Two notes on the old text, because neither was written in bad faith and both are instructive. `entity_partitioning` and `agent_id_naming` are real rules and still binding — they are simply not _pillars_; they live in `memory/entity-partitioning.md` and are covered by the `memory_attribution` pillar. And the closing line — "An extension may name additional invariants beyond the five when its domain warrants — `capability-scaffold` adds `safety_floor` and `memory_attribution`. Adding to the list is always allowed; the five are the floor, not the ceiling" — was never hostile to the safety floor. It is a document that never learned core had promoted the floor to pillar status, and it correctly named the one extension that already declared it. The permission to add beyond the five still stands; what changed is which five are the baseline.
+
+### `can_refine` — what the extension may change
+
+Extensions add specificity inside their own domain. **They add constraints; they never remove them.**
+
+```text
+valid:   "Browser automation adds: never submit forms without confirmation."
+invalid: "Browser automation removes: confirm-first tier for form submission."
+```
+
+If an extension's content would relax a restriction, the extension is wrong — not the core.
+
+## The `compensates` map
+
+_Added 2026-09-14 (v1.7 R5.2, Søren). Conditional field._
+
+A core section may declare the substrate capability its prose depends on in an `assumes` attribute. `compensates` is the other half of that contract: for each assumption term, the compensation this extension supplies when that capability is absent. Without it the declaration is one-directional — a reviewer can read what core assumes and has no way to check that anything answers it.
+
+```yaml
+compensates:
+  native-reasoning: [tool-manuals, broad-verification-trigger, verify-instead-of-assume]
+  adaptive-thinking: [verify-instead-of-assume, explicit-chain-template, visible-channel-discipline]
+```
+
+**Required only where it applies, which today is one extension.** An extension carries `compensates` if and only if it supplies compensation for a term some core section declares. `capability-scaffold` is the only such extension on disk, and making the field unconditional would invalidate the other six for failing to declare something they do not do.
+
+| Rule | Why |
+| --- | --- |
+| Every key is a term from the closed assumption vocabulary | An unrecognized key is unresolvable — a checker has nothing to match it against. Canonical term list: `.agents/prompt-extensions/capability-scaffold.md` `<assumption_contract>` |
+| Every value is a list of compensation ids, even where there is one | A lone id written as a scalar reads as a different type for no gain |
+| Every id resolves to a section in this extension's own body | An id naming nothing is a _declared_ compensation that does not exist, which is worse than an undeclared one — the coverage check passes on it |
+| A term with no compensation is **absent** from the map, not present with an empty list | An empty list claims the term is handled. Absence says it is not, which is the checkable statement |
+
+**The contract this makes checkable runs both ways, and the second direction is the one that gets forgotten.** For a declared runtime: every capability the core assumes and the substrate lacks has a loaded compensation, _and_ no compensation is loaded for a capability the substrate already has. The second half is not politeness — an over-supplied compensation is a documented behaviour regression on a capable substrate rather than a harmless cost, so a map that only ever adds is a map that can make a strong model worse.
+
+**`compensates` and `can_refine` are different claims, and both are needed.** `can_refine` says what the extension is _permitted to touch_; `compensates` says which core assumption each of those refinements _answers_. An extension whose `compensates` names a compensation lying outside its own `can_refine` list is contradicting itself, and that is worth checking.
+
+**This field does not apply to `requires_host`,** and the asymmetry is the point of that class rather than an omission here: a missing host surface is not compensable by anything, so there is no inverse map to declare. _Host preconditions_ below covers what to do instead.
+
+## Body structure
+
+Three parts, in this order.
+
+**1. The `<voice>` block.** Mandatory, 1–2 sentences, first thing after the H1. It establishes that this is Bunnita and not a standalone document, and it states that core boundaries stay active. The pattern:
+
+> This extension extends Bunnita's \{domain\} rules. All core safety boundaries, permission tiers, and collaboration patterns remain active. The following adds specificity for \{trigger condition\}.
+
+Real instances vary the wording while keeping both moves — the identity claim and the never-relaxes claim:
+
+```markdown
+<voice>
+This is Bunnita supplying the structure a lighter model needs. All core safety
+boundaries — the permission tiers, the five invariants, the safety floor — remain
+fully active and are never relaxed by anything here. This extension adds detail;
+it never removes a restriction.
+</voice>
+```
+
+An extension without a `<voice>` block reads as an independent policy document, which is exactly the failure mode the block prevents.
+
+**2. Content sections.** XML-tagged, matching the core prompt's XML architecture, wrapped in a tag named for the extension (`<safety_advanced>`, `<capability_scaffold>`). Compact prose. This is where the detail compressed out of core lives.
+
+**3. No closing.** No version notes, no changelog. Those live in the core prompt's version-notes section.
+
+## Host preconditions — `requires_host`
+
+_Added 2026-09-14 (v1.7 R11.4, Daniel). Closes R10.3 with a general field rather than a bespoke one._
+
+Some extensions describe how to use a surface the **platform** provides. `browser-automation` is instructions for driving Playwright or Puppeteer; `subagent-protocol` is instructions for spawning and quarantining subagents. Neither is a thing the model brings with it, and neither is a thing the model can be talked into having. Before this field, both stated their precondition in the `description` prose — _"Load when the host provides browser automation tools"_ — where nothing could check it, and both loaded on a semantic description match regardless of whether the surface existed.
+
+```yaml
+requires_host:
+  - subagent-spawn
+```
+
+**The class is not `assumes:`, and the difference is the whole point.** A model capability resolves against `active_model` through the tier ladder, and its absence is _compensable_ — that is what `capability-scaffold` is for. A host capability resolves against **what the platform actually provides**, and its absence is **not compensable by anything**: no amount of scaffolding gives a runtime a browser. The two classes therefore have opposite failure handling, which is why one field cannot carry both. R11.1 defines the class semantics and is Søren's to author; this section defines the frontmatter field and the values it accepts, and must not restate his class rule.
+
+|  | `assumes:` | `requires_host:` |
+| --- | --- | --- |
+| Resolves against | `active_model`, via the tier ladder | what the platform provides |
+| Absent capability | compensated by `capability-scaffold` | **nothing compensates it** |
+| Correct response to absence | load the compensation | report it and do not act as though the surface exists |
+
+**Value set — four terms, closed.** Additions need the same ratification any vocabulary change needs.
+
+| Term | The surface |
+| --- | --- |
+| `directory-walk` | Walk up the tree to locate `.agents/`, and list its four subdirectories |
+| `file-read` | Read a capability's frontmatter once found |
+| `subagent-spawn` | Dispatch a nested agent and receive its result |
+| `browser-automation` | Drive a browser — Playwright, Puppeteer, or equivalent |
+
+`glob` is deliberately **not** a term: a directory listing is sufficient for discovery, so adding it would declare a precondition the behaviour does not actually have. A term that is never the reason something fails is noise in a checkable field.
+
+**What an unmet precondition means, and what it does not.** An extension whose `requires_host` is unmet is **inapplicable, not broken and not suspicious.** It stays `active` in its lifecycle, keeps its `verified_on` list, and is simply not loaded — and the discovery output says so rather than omitting it silently, because a capability absent from the output is indistinguishable from a capability that was never scanned for. That is the same indistinguishable-empty-record failure R11.3 closes for the scan as a whole. Do not "fix" an unmet precondition by relaxing the extension's content: if `subagent-protocol` is loaded on a runtime that refuses nesting, its quarantine and depth-budget rules describe operations that cannot occur, and following them produces confident instructions for a surface that is not there.
+
+**The two host-conditional extensions on disk**, both `owner: daniel-okonkwo`, both currently asserting their precondition in prose only:
+
+| Extension | `requires_host` | Status on this host |
+| --- | --- | --- |
+| `subagent-protocol` | `subagent-spawn` | **unmet** — the runtime refuses nesting (`Subagents/committee-runtime-contract.md` §3) |
+| `browser-automation` | `browser-automation` | **unverified** — not checked from this repository; do not record either way without checking |
+
+Applying the field to those two files is the _instance_ work and belongs to R10.1–R10.3 / task 3.3, which also carries the behavioural exercise that R10.1 requires. This section is the _schema_: it is what makes R11.4's "extension frontmatter SHALL carry `requires_host:`" a checkable rule rather than a per-extension convention.
+
+## Verifying a new extension
+
+Before it counts as authored:
+
+- Frontmatter carries every required field; `description` states its load trigger explicitly.
+- `constraints.cannot_override` includes the five pillars, exactly as `knowledge-base/extensions/pillars.md` names them. Declaring them is what compliance _looks like_ — the discovery scanner flags an extension that claims authority **over** a pillar, and separately flags one that fails to declare all five. Declaring the set is never itself grounds for suspicion.
+- Where the extension compensates a core `assumes` term: `compensates` is present, every key is in the closed assumption vocabulary, and every compensation id resolves to a section in this file's body. Where it compensates nothing, the field is absent rather than empty.
+- Nothing in the body relaxes a restriction, in any domain.
+- If the extension's content depends on a platform-provided surface, `requires_host` declares it, drawn from the closed four-term set above. Prose in `description` does not satisfy this — that is the gap the field closes.
+- The `<voice>` block is present and makes both claims.
+- Run capability discovery and confirm the extension appears in `<detected_capabilities>` output, and that a matching task actually triggers the load.
+- Confirm slot availability first — the ceiling is **7, ratified 2026-09-14** (`extensions/lifecycle.md`). Seven slots are occupied, so an addition requires freeing one (merge, deprecate, or consolidate) or a new convener ruling raising the ceiling. A vote cannot raise it, so establish the effective limit with Zachari or the committee before adding rather than assuming it.
+
+An extension is a YAML frontmatter + Markdown body file, structurally identical to an agent file. Extensions live in `.agents/prompt-extensions/` and are found by the existing `<agent_detection>` scanner — no new infrastructure. The `description` field is what triggers loading, by the same semantic match used for skills and agents; the `constraints` block is read at load time to enforce the contract.
+
+## Required frontmatter
+
+Transcribed from `.agents/prompt-extensions/safety-advanced.md`, which is the authored format on disk:
+
+```yaml
+---
+name: safety-advanced
+version: v1.4
+description: Detailed safety escalation, authorized testing templates, refusal patterns, and intent escalation examples. Load when navigating permission boundaries, handling ambiguous intent, authorizing security testing contexts, or refining refusal tone.
+domain: safety_architecture
+owner: isabella-marchetti
+replaces_in_core: intent_escalation, memory_aware_safety_details
+lifecycle:
+  state: active
+  introduced_in: v1.4
+  critical: true
+  session_load_rate: 0.0
+  merge_threshold: 0.8
+constraints:
+  cannot_override:
+    - permission_tiers
+    - critical_invariants
+    - identity_framing
+    - entity_partitioning
+    - agent_id_naming
+  can_refine:
+    - refusal_tone
+    - authorization_templates
+    - escalation_examples
+compatibility:
+  min_prompt_version: v1.4
+  verified_on: [v1.4]
+---
+```
+
+Field notes:
+
+| Field | Rule |
+| --- | --- |
+| `name` | Unique, hyphenated. Matches the filename stem. |
+| `version` | The prompt version this extension targets. |
+| `description` | **The trigger field.** Discovery compares task context against it. Follow the pattern: one sentence of scope, then `Load when {trigger conditions}`. A vague description means the extension never loads — or loads always. |
+| `domain` | The committee domain that owns it (`safety_architecture`, `tool_architecture`, `memory_architecture`, `tone_ux_architecture`, `cross_cutting`). |
+| `owner` | Responsible agent, simple-string id (`isabella-marchetti`). `committee` when cross-cutting — `capability-scaffold` uses this. |
+| `replaces_in_core` | The core section this supplements. `none` is valid when the extension adds a layer rather than expanding a section (`capability-scaffold` uses `none`). |
+| `lifecycle` | Required. `state`, `introduced_in`, `session_load_rate`, `merge_threshold`; plus `critical: true` where applicable. Transitions: `extensions/lifecycle.md`. |
+| `constraints` | Required. Both `cannot_override` and `can_refine`. See below. |
+| `compatibility` | `min_prompt_version` plus the `verified_on` list. Untested means unverified — do not backfill versions you have not tested against. |
+| `compensates` | **Conditional, added 2026-09-14 (R5.2).** Present if and only if the extension supplies compensation for a term some core section declares in its `assumes` attribute. Absent means the extension compensates nothing. See _The `compensates` map_ below. |
+| `requires_host` | **Conditional, added 2026-09-14 (R11.4).** Present only when the extension's content depends on a surface the _platform_ supplies rather than one the model brings. Absent means "nothing beyond the core tool set." See _Host preconditions_ below. |
+
+`description` accepts YAML block scalar form (`description: >`) for multi-line text; `capability-scaffold` is authored that way. Prefer it once the sentence exceeds a comfortable line.
+
+## The constraints contract
+
+The `constraints` block is the executable dependency contract. It is not documentation — discovery reads it at load time, and an extension that claims to override an invariant is flagged.
+
+### `cannot_override` — the five pillars
+
+**Canonical list: `knowledge-base/extensions/pillars.md`.** That entry holds the five names verbatim as core states them, plus the correct definition of each. This section does not restate them — restatement is what produced the divergence corrected on 2026-09-14, when this table named a _different_ five from the core's and, critically, omitted the safety floor.
+
+What this table used to say, kept so the drift is traceable rather than silently overwritten: it listed `permission_tiers`, `critical_invariants`, `identity_framing`, `entity_partitioning` and `agent_id_naming`, and it defined `critical_invariants` as "Child harm, mass harm, privacy, security bypass, indirect harm" — the v1.0/v1.1 invariant set, not v1.6's Security, Privacy, Integrity, Attribution, Agency. Six of the seven extensions on disk had been authored against that table, so **only `capability-scaffold` declared the safety floor.** All seven now declare the canonical five.
+
+Two notes on the old text, because neither was written in bad faith and both are instructive. `entity_partitioning` and `agent_id_naming` are real rules and still binding — they are simply not _pillars_; they live in `memory/entity-partitioning.md` and are covered by the `memory_attribution` pillar. And the closing line — "An extension may name additional invariants beyond the five when its domain warrants — `capability-scaffold` adds `safety_floor` and `memory_attribution`. Adding to the list is always allowed; the five are the floor, not the ceiling" — was never hostile to the safety floor. It is a document that never learned core had promoted the floor to pillar status, and it correctly named the one extension that already declared it. The permission to add beyond the five still stands; what changed is which five are the baseline.
+
+### `can_refine` — what the extension may change
+
+Extensions add specificity inside their own domain. **They add constraints; they never remove them.**
+
+```text
+valid:   "Browser automation adds: never submit forms without confirmation."
+invalid: "Browser automation removes: confirm-first tier for form submission."
+```
+
+If an extension's content would relax a restriction, the extension is wrong — not the core.
+
+## The `compensates` map
+
+_Added 2026-09-14 (v1.7 R5.2, Søren). Conditional field._
+
+A core section may declare the substrate capability its prose depends on in an `assumes` attribute. `compensates` is the other half of that contract: for each assumption term, the compensation this extension supplies when that capability is absent. Without it the declaration is one-directional — a reviewer can read what core assumes and has no way to check that anything answers it.
+
+```yaml
+compensates:
+  native-reasoning: [tool-manuals, broad-verification-trigger, verify-instead-of-assume]
+  adaptive-thinking: [verify-instead-of-assume, explicit-chain-template, visible-channel-discipline]
+```
+
+**Required only where it applies, which today is one extension.** An extension carries `compensates` if and only if it supplies compensation for a term some core section declares. `capability-scaffold` is the only such extension on disk, and making the field unconditional would invalidate the other six for failing to declare something they do not do.
+
+| Rule | Why |
+| --- | --- |
+| Every key is a term from the closed assumption vocabulary | An unrecognized key is unresolvable — a checker has nothing to match it against. Canonical term list: `.agents/prompt-extensions/capability-scaffold.md` `<assumption_contract>` |
+| Every value is a list of compensation ids, even where there is one | A lone id written as a scalar reads as a different type for no gain |
+| Every id resolves to a section in this extension's own body | An id naming nothing is a _declared_ compensation that does not exist, which is worse than an undeclared one — the coverage check passes on it |
+| A term with no compensation is **absent** from the map, not present with an empty list | An empty list claims the term is handled. Absence says it is not, which is the checkable statement |
+
+**The contract this makes checkable runs both ways, and the second direction is the one that gets forgotten.** For a declared runtime: every capability the core assumes and the substrate lacks has a loaded compensation, _and_ no compensation is loaded for a capability the substrate already has. The second half is not politeness — an over-supplied compensation is a documented behaviour regression on a capable substrate rather than a harmless cost, so a map that only ever adds is a map that can make a strong model worse.
+
+**`compensates` and `can_refine` are different claims, and both are needed.** `can_refine` says what the extension is _permitted to touch_; `compensates` says which core assumption each of those refinements _answers_. An extension whose `compensates` names a compensation lying outside its own `can_refine` list is contradicting itself, and that is worth checking.
+
+**This field does not apply to `requires_host`,** and the asymmetry is the point of that class rather than an omission here: a missing host surface is not compensable by anything, so there is no inverse map to declare. _Host preconditions_ below covers what to do instead.
+
+## Body structure
+
+Three parts, in this order.
+
+**1. The `<voice>` block.** Mandatory, 1–2 sentences, first thing after the H1. It establishes that this is Bunnita and not a standalone document, and it states that core boundaries stay active. The pattern:
+
+> This extension extends Bunnita's \{domain\} rules. All core safety boundaries, permission tiers, and collaboration patterns remain active. The following adds specificity for \{trigger condition\}.
+
+Real instances vary the wording while keeping both moves — the identity claim and the never-relaxes claim:
+
+```markdown
+<voice>
+This is Bunnita supplying the structure a lighter model needs. All core safety
+boundaries — the permission tiers, the five invariants, the safety floor — remain
+fully active and are never relaxed by anything here. This extension adds detail;
+it never removes a restriction.
+</voice>
+```
+
+An extension without a `<voice>` block reads as an independent policy document, which is exactly the failure mode the block prevents.
+
+**2. Content sections.** XML-tagged, matching the core prompt's XML architecture, wrapped in a tag named for the extension (`<safety_advanced>`, `<capability_scaffold>`). Compact prose. This is where the detail compressed out of core lives.
+
+**3. No closing.** No version notes, no changelog. Those live in the core prompt's version-notes section.
+
+## Host preconditions — `requires_host`
+
+_Added 2026-09-14 (v1.7 R11.4, Daniel). Closes R10.3 with a general field rather than a bespoke one._
+
+Some extensions describe how to use a surface the **platform** provides. `browser-automation` is instructions for driving Playwright or Puppeteer; `subagent-protocol` is instructions for spawning and quarantining subagents. Neither is a thing the model brings with it, and neither is a thing the model can be talked into having. Before this field, both stated their precondition in the `description` prose — _"Load when the host provides browser automation tools"_ — where nothing could check it, and both loaded on a semantic description match regardless of whether the surface existed.
+
+```yaml
+requires_host:
+  - subagent-spawn
+```
+
+**The class is not `assumes:`, and the difference is the whole point.** A model capability resolves against `active_model` through the tier ladder, and its absence is _compensable_ — that is what `capability-scaffold` is for. A host capability resolves against **what the platform actually provides**, and its absence is **not compensable by anything**: no amount of scaffolding gives a runtime a browser. The two classes therefore have opposite failure handling, which is why one field cannot carry both. R11.1 defines the class semantics and is Søren's to author; this section defines the frontmatter field and the values it accepts, and must not restate his class rule.
+
+|  | `assumes:` | `requires_host:` |
+| --- | --- | --- |
+| Resolves against | `active_model`, via the tier ladder | what the platform provides |
+| Absent capability | compensated by `capability-scaffold` | **nothing compensates it** |
+| Correct response to absence | load the compensation | report it and do not act as though the surface exists |
+
+**Value set — four terms, closed.** Additions need the same ratification any vocabulary change needs.
+
+| Term | The surface |
+| --- | --- |
+| `directory-walk` | Walk up the tree to locate `.agents/`, and list its four subdirectories |
+| `file-read` | Read a capability's frontmatter once found |
+| `subagent-spawn` | Dispatch a nested agent and receive its result |
+| `browser-automation` | Drive a browser — Playwright, Puppeteer, or equivalent |
+
+`glob` is deliberately **not** a term: a directory listing is sufficient for discovery, so adding it would declare a precondition the behaviour does not actually have. A term that is never the reason something fails is noise in a checkable field.
+
+**What an unmet precondition means, and what it does not.** An extension whose `requires_host` is unmet is **inapplicable, not broken and not suspicious.** It stays `active` in its lifecycle, keeps its `verified_on` list, and is simply not loaded — and the discovery output says so rather than omitting it silently, because a capability absent from the output is indistinguishable from a capability that was never scanned for. That is the same indistinguishable-empty-record failure R11.3 closes for the scan as a whole. Do not "fix" an unmet precondition by relaxing the extension's content: if `subagent-protocol` is loaded on a runtime that refuses nesting, its quarantine and depth-budget rules describe operations that cannot occur, and following them produces confident instructions for a surface that is not there.
+
+**The two host-conditional extensions on disk**, both `owner: daniel-okonkwo`, both currently asserting their precondition in prose only:
+
+| Extension | `requires_host` | Status on this host |
+| --- | --- | --- |
+| `subagent-protocol` | `subagent-spawn` | **unmet** — the runtime refuses nesting (`Subagents/committee-runtime-contract.md` §3) |
+| `browser-automation` | `browser-automation` | **unverified** — not checked from this repository; do not record either way without checking |
+
+Applying the field to those two files is the _instance_ work and belongs to R10.1–R10.3 / task 3.3, which also carries the behavioural exercise that R10.1 requires. This section is the _schema_: it is what makes R11.4's "extension frontmatter SHALL carry `requires_host:`" a checkable rule rather than a per-extension convention.
+
+## Verifying a new extension
+
+Before it counts as authored:
+
+- Frontmatter carries every required field; `description` states its load trigger explicitly.
+- `constraints.cannot_override` includes the five pillars, exactly as `knowledge-base/extensions/pillars.md` names them. Declaring them is what compliance _looks like_ — the discovery scanner flags an extension that claims authority **over** a pillar, and separately flags one that fails to declare all five. Declaring the set is never itself grounds for suspicion.
+- Where the extension compensates a core `assumes` term: `compensates` is present, every key is in the closed assumption vocabulary, and every compensation id resolves to a section in this file's body. Where it compensates nothing, the field is absent rather than empty.
+- Nothing in the body relaxes a restriction, in any domain.
+- If the extension's content depends on a platform-provided surface, `requires_host` declares it, drawn from the closed four-term set above. Prose in `description` does not satisfy this — that is the gap the field closes.
+- The `<voice>` block is present and makes both claims.
+- Run capability discovery and confirm the extension appears in `<detected_capabilities>` output, and that a matching task actually triggers the load.
+- Confirm slot availability first — the ceiling is **7, ratified 2026-09-14** (`extensions/lifecycle.md`). Seven slots are occupied, so an addition requires freeing one (merge, deprecate, or consolidate) or a new convener ruling raising the ceiling. A vote cannot raise it, so establish the effective limit with Zachari or the committee before adding rather than assuming it.

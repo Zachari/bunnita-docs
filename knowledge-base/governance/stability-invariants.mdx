@@ -1,0 +1,98 @@
+---
+title: "Stability Invariants"
+sidebarTitle: "Stability Invariants"
+description: "What never changes across versions, exactly who may write what, and the anti-bloat cap's unit"
+operation: "version-boundary, knowledge-base-write"
+summary: "What never changes across versions, exactly who may write what, and the anti-bloat cap's unit"
+tier: "all"
+authority: "canonical"
+supersedes: "AGENTS.md §Operational Knowledge Base (Immutability rule)"
+last_verified: "2026-09-14"
+---
+
+The rules that survive a version boundary, and the write-authority that protects them. Consult this before proposing a change to any entry, any invariant, or the deliberation record.
+
+## The immutability rule
+
+The knowledge base and the operational knowledge base change on exactly two triggers: **Zachari explicitly requests the change**, or **a ratified committee proposal carries reasoning and references backing it**. No agent modifies either autonomously.
+
+An agent that encounters an operational failure pattern not covered by the knowledge base **flags it for committee review and suggests a rule** — it does not write one. That is the distinction that matters: flagging is always in scope, writing never is.
+
+Decomposition made this rule enforceable per-entry rather than per-monolith. `memory/entity-partitioning.md` can be locked while `routing/effort-calibration.md` iterates.
+
+## Who may write what
+
+| Artifact | May write | May not write |
+| --- | --- | --- |
+| `knowledge-base/**` | Zachari; a ratified committee proposal | Any committee member acting alone — flag with reasoning and references instead |
+| `Builds/bunnita-operational-knowledge-v1-35.md` | Same as above | Same as above |
+| `Subagents/committee-deliberation.md` | Append a new round | Delete or modify a past round; corrections land as new rounds |
+| A member's own file memory (`preferences.md`, `projects.md`, `history/`, workspace lessons) | That member only | Every other member — no member reads or writes another's store |
+| The shared semantic/episodic vector layer | Any member | — but a recall from it may be another member's conclusion; attribute before relying on it |
+| A shipped build's enum or prose | The next version's build | Any mid-cycle patch — build discipline forbids it |
+| A verification gate signature | A non-author | The build's author, for any gate |
+
+Subagent nesting is refused by the runtime. A member cannot fan work out to helpers; a task that genuinely needs parallel decomposition goes back to the convener with that stated.
+
+## Vote arithmetic and the approval gate (ratified 2026-09-14)
+
+Six voting members. **4 of 6 carries; a 3–3 split does not carry and is escalated to the convener as a steel-manned brief for the deciding vote.** A carried vote makes a selection eligible, not scoped — **Zachari approves before anything becomes the next build's focus.** Both rules are canonical in `knowledge-base/governance/deliberation-protocol.md`; they are recorded here because they bear directly on what a vote can and cannot settle.
+
+This resolves what `knowledge-base/INDEX.md` recorded as contested #4. It matters to this entry specifically: an invariant that "no vote can override" was, until today, protected by a vote mechanism whose majority threshold at six members was undefined in every source. The protection was sound in intent and unquantified in practice.
+
+## Invariants no vote can override
+
+**The five core safety invariants:** `permission_tiers`, `critical_invariants`, `identity_framing`, `entity_partitioning`, `agent_id_naming`. A round that would breach one is out of scope for the vote, not a matter to be won on the merits.
+
+**Single source of truth per fact.** Exactly one entry carries `authority: canonical` for a given fact; everything else is `reference` and links to it. The consistency audit fails a build where two canonical entries claim the same fact, or where an `INDEX.md` summary has drifted from its entry's content.
+
+**The four-identifier write invariant.** Every memory write carries all four identifiers. Canonical mechanics in `knowledge-base/memory/entity-partitioning.md`; the v1.7 fix keeps a one-line inline restatement in the prompt core so the principle is always seen while the procedure stays consulted at the operation.
+
+**`critical: true` extensions are exempt from auto-deprecation.** `safety-advanced` and `capability-scaffold` carry the flag.
+
+**Append-only deliberation.** Stated above under write-authority; restated here because it is the invariant most often violated by good intentions.
+
+## The stability check
+
+Version N+1 must show that version N's metrics improved. No change for change's sake.
+
+This is not decorative. Round 27 applied it against the committee's own release: v1.6 shipped on argument rather than on the eval the invariant requires, and was therefore recorded as **provisional**, not ratified — with v2.0 orchestrator work gated behind the measurement. The check binds the committee to its own standard, including when the release is one it voted for unanimously.
+
+Renata's three gates operationalize it, and none may be signed by the build's author: **referential integrity** (no dangling reference), **mechanism specification** (no policy without a mechanism, for any safety-relevant load), **measured improvement** (run the eval). Marcus's constraint governs their form: a gate is a script, not a meeting.
+
+## The anti-bloat cap (unit ruled 2026-09-14)
+
+The guardrail that keeps a release from escaping prompt over-engineering by reinventing it as process. Its _form_ rule is stated above — a gate is a script, not a meeting. This is its _size_ rule, and the unit changed.
+
+**The unit is mandated words at fixpoint. Requirement count is retired.** Measure with `scripts/gates/reading_surface.py`, before and after, on the tree; quote the fixpoint figure with its date and its ref, per `scripts/gates/reading-surface-procedure.md`.
+
+**Why the unit changed, recorded because the retired unit was Marcus's own.** The cap was set at Round 35 as "the eval plus at most five requirements." v1.7 carries ten, so by that unit the release breached — while the surface it mandates fell 36.6% in a single task. A count-denominated cap would have **blocked R8, the one requirement in the release that makes the system cheaper**, and waved through any number of cheap prose additions, because a requirement is not a unit of cost. A guardrail measuring the wrong thing is worse than none: it spends its authority on the wrong refusals and has none left for the right one.
+
+**The rule.** A release's net change to the mandated surface is **≤ 0 by default.** A release that raises it states the increase line by line with what each line buys, and carries that to the convener under the approval gate in `knowledge-base/governance/deliberation-protocol.md` — the same gate a selection already passes. There is no numeric allowance, because a numeric allowance becomes a budget to spend.
+
+**Two reductions do not count as reductions,** and this clause is what makes a word-denominated cap safe where a count-denominated one needed no such guard:
+
+- **Deleting canonical content.** Relocation and conditional loading only. A fact that no longer has a home is not a saving.
+- **Inducing fabrication.** A conditional read whose reader is expected to infer the file's contents instead of reading it trades a measured cost for an unmeasured correctness failure. Hence the standing clause in `AGENTS.md` §1a: ambiguity resolves toward reading, and stating project state without opening the file is fabrication, which no reduction target excuses.
+
+**And the instrument has a blind spot the cap must respect.** The measurement derives its file set from `AGENTS.md` alone, so a `read` mandate placed in any other file — a skill, an extension, a persona — is invisible to it and the figure will not move. One such mandate existed in `.agents/skills/bunnita-session-bootstrap/SKILL.md` and was closed on 2026-09-14; the blind spot is permanent. A release that adds an always-on read outside `AGENTS.md` is over the cap whether or not the script says so.
+
+_Written by Marcus Chen on the convener's explicit instruction of 2026-09-14 (Wave 2, M4), which is the first trigger the immutability rule above names. The cap is his, the retired unit was his, and the ruling that retires it is his. If the convener judges the write itself out of scope, it is one section to revert — but the cap had no canonical home before this, and that is why it survived a full wave in the wrong unit: it was stated once inside an append-only journal round and paraphrased in a release-scoped task list that will not outlive v1.7._
+
+## Resolved
+
+**Memory category count — eight, resolved 2026-09-14.** This entry filed the count under _Contested — recorded, not resolved_ and justified the deferral on a claim that does not hold: that `AGENTS.md` "notes the shipped v1.6 build's `MemoryWrite` enum still lists six, with reconciliation deferred to v1.7 to preserve build discipline." **`grep -c MemoryWrite Builds/bunnita-system-prompt-v1-6.md` returns `0`**, against `1` for v1.5, where the enum actually lives. The deferral was protecting an artifact that does not exist, and that void rationale is dropped rather than restated.
+
+Resolved by convener direction 2026-09-14, propagated in v1.7 Wave 2: **eight categories**, adding `engineering_architecture` (Søren) and `integration_verification` (Renata) to the original six. Canonical in `knowledge-base/memory/categories-and-types.md`, which now enumerates eight and records the superseded six in past tense. `conductor/tech-stack.md` was amended in the same pass; `knowledge-base/INDEX.md` contested #7 carries the propagation record.
+
+**The surviving obligation is forward-looking, and it is not a build obligation.** The Document-Truth Audit's count check asserts on the canonical entry — that it enumerates eight and that its six agent-owner rows reconcile against the roster in `memory/entity-partitioning.md` — rather than on a build artifact that may not exist. **v1.7 introduces no enum** (`Proposals/v1.7-spec/requirements.md` R7): core carries a pointer to the canonical entry and the vocabulary stays there. If a later build does introduce an enum it lists all eight, and the check then has two subjects instead of one. A count in a frozen, unpatchable build is a mutable roster projection in an immutable artifact — the roster changed once already, at Round 26, and produced exactly this drift.
+
+**Why this is filed as a lesson and not only as a correction.** A resolution recorded in `INDEX.md`'s contested table is not a resolution propagated to the entries that state the value. This item was ruled resolved on 2026-09-14 and, for a day, four canonical or project locations still read six — the identical shape of the extension-ceiling item, where one convener grant was executed in a new build while nine other documents kept the old number. Recording is cheap and propagation is the work; a ledger entry that does not name where the value was changed cannot distinguish the two.
+
+## Contested
+
+Recorded, not resolved.
+
+**Committee size — six vs. four.** Six members are named in `conductor/product.md:50–54`, `Subagents/committee-runtime-contract.md` (header: "applies to all six equally"), `AGENTS.md` §Architecture, and `Subagents/committee-deliberation.md:10–13`. Four are asserted in `conductor/product.md:68`, in the per-agent skill tables at `conductor/tech-stack.md:132–136` (no Søren or Renata row), and throughout `.agents/skills/bunnita-committee-deliberation/SKILL.md`. _Line reference re-resolved 2026-09-14: the skill tables were cited as `:100–105` before the category and partitioning amendments shifted that file; the rows themselves are unchanged and still omit both members._
+
+**Extension ceiling — six vs. seven.** `.agents/skills/bunnita-committee-deliberation/SKILL.md:126` states no vote may exceed **6** active extensions without deprecating one first. `AGENTS.md:371` records the directory as "max **7** as of v1.6" and lists seven active extensions; `conductor/product.md:69` states a "7-extension ceiling as of v1.6". The structural rule and the shipped state disagree by one, and the rule's own text makes it vote-proof — so it cannot have been raised by a vote.

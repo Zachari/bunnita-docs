@@ -1,0 +1,110 @@
+---
+title: "Effort Calibration"
+operation: "task-routing, effort-setting"
+summary: "Five effort levels (low/medium/high/xhigh/max), default high, adaptive thinking must be enabled explicitly; the effort-by-tier table is keyed by ladder position after the 2026-09-14 correction"
+tier: "all"
+authority: "canonical"
+supersedes: "zara-opus-5-operation-modes.md §The Effort Ladder + §Token Efficiency Directives (and the effort rows of starters/bunnita-opus-5-operation-modes.md §Token Budget Guidelines)"
+last_verified: "2026-09-30"
+sidebarTitle: "Effort Calibration"
+description: "Five effort levels (low/medium/high/xhigh/max), default high, adaptive thinking must be enabled explicitly; the effort-by-tier table is keyed by ladder position after the 2026-09-14 correction"
+---
+
+Effort is the primary control on a frontier Claude substrate — more consequential than on any prior generation — and it is set deliberately, not left at whatever the caller defaults to. Adaptive thinking is the companion setting: it is **off unless explicitly enabled**, so a session that never sets it gets no extended reasoning at any effort level.
+
+The pairing is what matters. Effort sets the budget; adaptive thinking decides how the model spends it per task. Once both are set correctly, the prompt should stop pushing — telling a model at `high` to "think hard" or "be thorough" duplicates what the setting already does and inflates output tokens for no quality gain.
+
+## Enabling thinking
+
+```text
+thinking: {type: "adaptive"}
+```
+
+Required. Thinking is off unless set. Thinking tokens bill as **output** tokens, which is why a raised effort level shows up on the bill as output volume rather than input.
+
+Context ceiling: up to 1M tokens. Max output: 128k tokens. At `xhigh` and above, set a large `max_tokens` so the model has room to use the budget it was given.
+
+## The effort ladder
+
+| Effort | Use for | Notes |
+| --- | --- | --- |
+| `low` | Short, scoped, latency-sensitive tasks that are not intelligence-sensitive | Scopes tightly to what was asked; risk of under-thinking on anything complex |
+| `medium` | Cost-sensitive work that trades some depth for speed | Good default for routine execution |
+| `high` | Most intelligence-sensitive work — the default floor | Balances depth and cost; the model almost always thinks |
+| `xhigh` | Long-horizon coding and agentic tasks (30+ minutes, large budgets) | Best setting for sustained coding; pair with a large `max_tokens` |
+| `max` | Tasks where evals show headroom above `xhigh` | Diminishing returns; can over-think; test before adopting |
+
+There are five levels and no others. `high` is the default. Step **up** to `xhigh` for sustained agentic or coding work; step **down** to `medium` for cost-sensitive routine work. Use `max` only after measuring that it helps on the specific task class — its documented failure mode is over-thinking, not under-thinking.
+
+## Effort by capability tier
+
+Effort and ladder position are set together, not independently. The position → model mapping is canonical in `routing/model-selection.md` and is transcribed below, not restated.
+
+**Corrected 2026-09-14.** This table was keyed by the four inherited tier names, and after the ladder correction those names no longer identify substrates one to one — three of them collapse onto Opus 5, separated by effort rather than by model. It is now keyed by ladder position, with the inherited names kept in a column of their own so nothing that cites them loses its referent.
+
+| Position | Model | Inherited tier name(s) | Effort |
+| --- | --- | --- | --- |
+| At or above the assumed tier | Fable 5, Fable 5.1 | — | native; not currently routable |
+| **Assumed tier — default / standard execution** | **Opus 5** | `standard-execution`, `complex-analysis`, `frontier-reasoning` | high–xhigh |
+| Light verification | Sonnet 5 | `light-verification` | medium–high |
+| **L2 fallback floor — not a work tier** | Haiku 4.5 | — | no adaptive thinking; never route reasoning or judgment here |
+| No declaration | resolves to Haiku 4.5 | — | as the floor |
+
+**What this corrects, kept visible rather than silently overwritten.** The old `light-verification` row read "— (no adaptive thinking available at this tier)". That was true of Haiku 4.5, which held the tier when the row was written, and is **false of Sonnet 5**, which occupies it after the ladder correction and thinks by default. The claim had not merely gone stale: read literally it forbade adaptive thinking on Sonnet 5, and it would have routed every mechanical-verification pass at no thinking on a substrate that has it. "No adaptive thinking" now sits on the row where it is true, paired with the firm rule it actually belongs to — never route reasoning or judgment to the floor.
+
+The old `standard-execution` row read `medium–high`, which after the collapse would make `medium` the _tier default_ on Opus 5, against the high–xhigh band that both `routing/model-selection.md` and `AGENTS.md` declare for the assumed tier. `medium` stays available on Opus 5, but as the deliberate step-down the ladder above already describes for cost-sensitive routine work — a caller's choice, not a default.
+
+## Effort by mode
+
+**Full Power — now an alias of FRONTIER·STEADY (2026-09-30).** Effort starts at the declared model's native default and stays there uniformly: `high` on Opus 5, so behavior there is unchanged, and `medium` on Opus 5.5. Adaptive thinking handles depth scaling per question, so there is no per-section variation — all nine starter sections (Foundations, Memory, Governance, Safety, Tools, UX, Extensions, Comparative, Meta) run at the same level, including the final synthesis. No questions are skipped and no answers are compressed.
+
+**Efficient (default).** Effort follows the tier table above, with escalation on the specific task that needs it rather than on the whole session.
+
+**FRONTIER.** The `high` default floor above does not apply. Every sub-mode starts at the model's native default, resolved from the known-defaults table in `routing/frontier-mode.md`, then a default the host states, then `high`. The floor is `medium`; `low` is not permitted. STEADY ranges `medium`–`xhigh`. OPEN and MAX range `medium`–`max`, chosen per task, and lift the project cap below. Canonical: `routing/frontier-mode.md`.
+
+Mode is the caller's choice. Unspecified means Efficient.
+
+## The project's deliberate cap
+
+`starters/bunnita-opus-5-operation-modes.md` restricts effort to `high` uniformly and states that `xhigh` and `max` are "reserved for future optimization phase. Not used in current operation modes."
+
+This is not a contradiction of the ladder above. The portable standard explicitly anticipates it: _"A project in a testing or cost-control phase may cap effort at `high` deliberately — that's a valid local policy."_ The ladder defines what the levels mean; the Bunnita analysis workflow currently declines to use the top two. Read the cap as an active local policy with a stated expiry condition (the optimization phase), not as a claim that `xhigh` and `max` do not exist. **FRONTIER·OPEN and FRONTIER·MAX lift the cap for their session; FRONTIER·STEADY lifts it to `xhigh` only** (`routing/frontier-mode.md`).
+
+Where the two documents genuinely differ in scope: the portable standard permits `xhigh` for long agentic and coding work generally, which is a different activity from the 27-question analysis workflow the Bunnita cap governs. A sustained coding session is not covered by that cap.
+
+## Token efficiency directives
+
+These prevent overthinking and token inflation without reducing quality. They apply in both modes and at every effort level.
+
+1. **No scaffolding language.** Do not treat plain instructions as `CRITICAL`/`MUST`/`ALWAYS`. Follow them literally, at face value. Reserve firm language for irreversible actions.
+2. **Commit, do not thrash.** Choose an approach and commit to it. Do not revisit unless new information directly contradicts the reasoning. Weighing two framings — pick one and deliver it.
+3. **Thinking is for multi-step reasoning.** Simple factual or mechanical work does not need extended thinking. Reserve depth for synthesis and novel inference. On a simple task, when in doubt, respond directly.
+4. **Calibrate length to complexity.** A clear answer gets a few sentences; a synthesis task gets paragraphs. Do not pad every response to a uniform length. In the analysis workflow this reads concretely: a question with a clear answer is 150–300 words, a question requiring multi-document synthesis is 400–800, and only the summary section exceeds 1000.
+5. **Positive framing.** State what is, not what is not. "It works by X" beats "it does not do Y or Z." Tighter and clearer.
+6. **No preamble.** Begin with the substance. The question is the preamble.
+7. **One pass.** Answer once, well. Do not circle back to bolt on caveats — integrate what matters into the main answer.
+
+## Where the savings actually come from
+
+Raising or lowering effort between Opus tiers does not change the per-token price; the Opus tiers are priced identically, so the choice between them is a capability decision rather than a cost one. The real reductions are:
+
+1. Routing mechanical work to `light-verification`, which is substantially cheaper per token. **The "roughly 5x" ratio this line used to carry was removed 2026-09-14, for the same root cause as the tier row above:** it was measured against Haiku 4.5, which held that tier when the line was written and no longer does. Sonnet 5 pricing is not documented anywhere in this repository, so no replacement ratio is stated — `AGENTS.md` had already dropped the number and this entry had kept it. Do not budget against a figure that is not on disk.
+2. Lowering effort where deep thinking is not needed — this cuts thinking-token output volume, which is the largest single line item.
+3. Prompt caching on the repeated system prompt (roughly 10x input discount on a cache hit).
+4. Not running `xhigh` on tasks that do not require self-referential or long-horizon reasoning.
+
+Cache economics: uncached input at the standard rate, cache hit at roughly one tenth of it, 5-minute cache write at a modest premium over uncached, 1-hour cache write at a larger premium for extended sessions. Caching is worth it whenever the same stable context is reused across two or more calls, and irrelevant for a single one-shot call.
+
+## Quality gates
+
+Before delivering significant work, check five things and fix any that fail rather than shipping around them:
+
+1. **Completeness** — every part of the request is addressed.
+2. **Specificity** — claims reference concrete sources, mechanisms, or evidence rather than gesturing.
+3. **Honesty** — weaknesses and uncertainty stated directly; no "it depends" without saying on what.
+4. **Calibration** — confidence and length match the actual strength of the work, not generic encouragement.
+5. **Actionability** — recommendations are specific enough to act on.
+
+## Reading discipline
+
+This entry is read once when effort is being set, not re-read per task. Internalize the level and execute. The same applies to the operation-modes documents it supersedes.

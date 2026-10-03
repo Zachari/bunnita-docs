@@ -71,6 +71,49 @@
             ]
           }
         ]
+      },
+      {
+        "tab": "Knowledge Base",
+        "icon": "book",
+        "groups": [
+          {
+            "group": "Overview & Governance",
+            "pages": [
+              "knowledge-base/index",
+              "knowledge-base/governance/deliberation-protocol",
+              "knowledge-base/governance/stability-invariants"
+            ]
+          },
+          {
+            "group": "Memory",
+            "pages": [
+              "knowledge-base/memory/entity-partitioning",
+              "knowledge-base/memory/tag-conventions",
+              "knowledge-base/memory/content-style",
+              "knowledge-base/memory/categories-and-types",
+              "knowledge-base/memory/recovery"
+            ]
+          },
+          {
+            "group": "Extensions",
+            "pages": [
+              "knowledge-base/extensions/lifecycle",
+              "knowledge-base/extensions/authoring",
+              "knowledge-base/extensions/pillars",
+              "knowledge-base/extensions/critical-flag"
+            ]
+          },
+          {
+            "group": "Routing",
+            "pages": [
+              "knowledge-base/routing/model-selection",
+              "knowledge-base/routing/effort-calibration",
+              "knowledge-base/routing/capability-scaffold",
+              "knowledge-base/routing/runtime-declaration",
+              "knowledge-base/routing/frontier-mode"
+            ]
+          }
+        ]
       }
     ]
   },

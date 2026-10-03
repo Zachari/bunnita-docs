@@ -1,0 +1,171 @@
+---
+title: "Categories and Types"
+operation: "memory-write"
+summary: "8 categories with owners, 9 interaction types, 4-anchor confidence scale"
+tier: "all"
+authority: "canonical"
+supersedes: "mem0-interaction-standard.md \\u00a73, mem0-interaction-standard.md \\u00a77, bunnita-operational-knowledge-v1-35.md \\u00a75.2 (confidence scale only)"
+last_verified: "2026-09-14"
+sidebarTitle: "Categories and Types"
+description: "8 categories with owners, 9 interaction types, 4-anchor confidence scale"
+---
+
+Three metadata vocabularies travel with every write: the **category** (which domain the memory belongs to), the **interaction type** (what kind of event produced it), and the **confidence** (how much weight it should carry on retrieval). They are independent fields - a memory has one of each - and none of them is the `[tag]` prefix, which is a content convention canonical in `memory/tag-conventions.md`.
+
+## The eight categories
+
+Eight custom categories. Six are owned by one agent each; one is shared and one is user-scoped. Ownership determines who writes into the category, not who may read it.
+
+| Category | Owner | Example memory |
+| --- | --- | --- |
+| `safety_architecture` | Isabella | "Intent escalation added to permission model in v1.2" |
+| `tool_architecture` | Daniel | "Quarantine protocol: 3 strikes = user escalation" |
+| `memory_architecture` | Priya | "MemoryRead now accepts freshness filter" |
+| `tone_ux_architecture` | Marcus | "Mode transitions preserve working state" |
+| `engineering_architecture` | S\\u00f8ren | "Assumption tags bind to the runtime thinking flag, not model identity" |
+| `integration_verification` | Renata | "Gate R's first canary passed vacuously; replaced with a seeded synthetic dangle" |
+| `committee_decisions` | Bunnita (shared) | "Round 14: v1.2 ships with 4 structural additions" |
+| `bunnita_taste` | Zachari (user-scoped) | "Prefers direct answers, no trailing offers" |
+
+Six of the eight are agent domains; `committee_decisions` is shared and `bunnita_taste` is user-scoped. So _eight categories_ does not mean _eight agents_ - the domain count and the committee roster are different numbers and must not be inferred from one another. The current agent roster and the `--agent-id` value for each member are canonical in `memory/entity-partitioning.md`; do not treat this ownership table as the roster.
+
+**Superseded record - the table carried six until 2026-09-14.** Until then it was the v1.0 standard's table, which predates the six-member committee, and S\\u00f8ren Aalto and Renata Ferreira had no owned category in it. Four of the eight are agent domains under the original roster and two under the Round 26 expansion; `committee_decisions` was shared and `bunnita_taste` user-scoped then as now, which is why eight categories still does not mean eight agents. Resolved to eight by convener direction 2026-09-14 and authorized for application in v1.7 Wave 2, closing `knowledge-base/INDEX.md` contested #7. The deferral rationale that held the count at six - preserving the shipped v1.6 build's `MemoryWrite` enum - was void: `grep -c MemoryWrite Builds/bunnita-system-prompt-v1-6.md` returns `0`, against `1` for v1.5, where the enum actually lives. Nothing in a build was being protected.
+
+**Two other locations still read six, and both are already subordinate to this entry.** `Subagents/mem0-interaction-standard.md` \\u00a73 enumerates six, and this entry's `supersedes` frontmatter names that exact section, so the standard's count is superseded by declaration rather than in conflict. The standard governs API-level correctness; category _ownership_ is operational discipline, which is this entry's authority. `Proposals/knowledge-base-structure.md:45` describes the planned shape of this file and is a formation proposal, not a canonical source. Neither was edited on 2026-09-14; both are recorded here so a repository sweep that finds six in them does not read it as an open contradiction.
+
+**The count is asserted here, not in a build.** The Document-Truth Audit's category count check takes this entry as its subject: it asserts that the table above enumerates eight and that the six agent-owner rows reconcile against the roster in `memory/entity-partitioning.md`. A build is not required to carry a category enum, and v1.7 deliberately does not - core names this entry as the pointer and the vocabulary stays here (`Proposals/v1.7-spec/requirements.md` R7). If a future build does introduce an enum, it lists all eight, and the check then has two subjects rather than one.
+
+### Domain and self-critique tags per agent
+
+| Agent | agent_id (simple) | Domain categories | Self-critique tag |
+| --- | --- | --- | --- |
+| Isabella | `isabella-marchetti` | `safety_architecture` | `[self-critique] isabella` |
+| Daniel | `daniel-okonkwo` | `tool_architecture` | `[self-critique] daniel` |
+| Priya | `priya-krishnamurthy` | `memory_architecture` | `[self-critique] priya` |
+| Marcus | `marcus-chen` | `tone_ux_architecture` | `[self-critique] marcus` |
+| S\\u00f8ren | `soren-aalto` | `engineering_architecture` | `[self-critique] soren` |
+| Renata | `renata-ferreira` | `integration_verification` | `[self-critique] renata` |
+| Zachari | (user_id only) | `bunnita_taste` | N/A |
+
+The two rows added on 2026-09-14 take the ASCII stem of the `--agent-id`, so `soren` rather than `s\u00f8ren`. Tags are searched as literal strings (`memory/tag-conventions.md` \\u00a7Retrieval), so a non-ASCII retrieval key would split the query surface between the two spellings and make one half unfindable by anyone typing the other.
+
+## The nine interaction types
+
+```text
+user_preference | self_critique | committee_deliberation | skill_analysis |
+tool_observation | safety_incident | boundary_proximity | prompt_effectiveness |
+project_context
+```
+
+These are the `interaction_type` argument to MemoryWrite. They are written in snake_case without brackets - `self_critique`, not `[self-critique]`. The bracketed forms are content tags.
+
+Adjacent to interaction type, MemoryWrite also carries a **type**: `user_preference | project_context | feedback | reference | capability_meta`. Type and interaction_type are separate fields that share two value names (`user_preference`, `project_context`); do not collapse them.
+
+## The confidence scale
+
+Four anchors on a 0.5-1.0 range:
+
+| Value | Meaning |
+| --- | --- |
+| `0.5` | Speculation |
+| `0.7` | Observation |
+| `0.9` | Confirmed fact |
+| `1.0` | Committee-consensus decision |
+
+Two thresholds depend on this scale:
+
+- **Citation** - cited memories must be hot or warm with confidence >= 0.7. Below that, a memory may inform your thinking but must not be presented as established (see `memory/content-style.md`).
+- **Dedup** - the write-time reinforce-instead-of-duplicate gate sits at >= 0.7 (see `memory/content-style.md`, including its Contested section).
+
+Self-critique writes are constrained to a narrower band: the content form is `[self-critique] \{agent_name\} \{specific observation\}. confidence=\{0.5-0.9\}.` The `1.0` anchor is unavailable to a self-critique because `1.0` denotes committee consensus, which a single agent cannot assert about its own work.
+
+## Contested
+
+The nine interaction types are attributed to a source that does not contain them.
+
+- **Claim A - the list belongs to the mem0 standard.** `Builds/bunnita-system-prompt-v1-5.md` introduces the list as "Interaction types from the mem0 standard" and elsewhere calls it "the 9-type standard."
+- **Claim B - the mem0 standard has no such list.** `Subagents/mem0-interaction-standard.md` v1.0 enumerates ten `[tag]` content prefixes in \\u00a76 and six categories in \\u00a73, but never enumerates `interaction_type` values anywhere.
+
+The nine-value list is therefore transcribed above from the v1.5 build, which is the only source that states it. Its provenance as a mem0-standard rule is unverified.
+
+Separately, the membership of the list changed between builds without a recorded decision: `Builds/bunnita-system-prompt-v1-3.md` lists **eight** types, omitting `boundary_proximity`; `Builds/bunnita-system-prompt-v1-5.md` lists **nine**, adding it. This reads as version progression rather than live disagreement - v1.5 supersedes v1.3 - but no changelog entry documents the addition, so the nine-value list is recorded here as current-by-recency, not as ratified.
+
+Three metadata vocabularies travel with every write: the **category** (which domain the memory belongs to), the **interaction type** (what kind of event produced it), and the **confidence** (how much weight it should carry on retrieval). They are independent fields - a memory has one of each - and none of them is the `[tag]` prefix, which is a content convention canonical in `memory/tag-conventions.md`.
+
+## The eight categories
+
+Eight custom categories. Six are owned by one agent each; one is shared and one is user-scoped. Ownership determines who writes into the category, not who may read it.
+
+| Category | Owner | Example memory |
+| --- | --- | --- |
+| `safety_architecture` | Isabella | "Intent escalation added to permission model in v1.2" |
+| `tool_architecture` | Daniel | "Quarantine protocol: 3 strikes = user escalation" |
+| `memory_architecture` | Priya | "MemoryRead now accepts freshness filter" |
+| `tone_ux_architecture` | Marcus | "Mode transitions preserve working state" |
+| `engineering_architecture` | S\\u00f8ren | "Assumption tags bind to the runtime thinking flag, not model identity" |
+| `integration_verification` | Renata | "Gate R's first canary passed vacuously; replaced with a seeded synthetic dangle" |
+| `committee_decisions` | Bunnita (shared) | "Round 14: v1.2 ships with 4 structural additions" |
+| `bunnita_taste` | Zachari (user-scoped) | "Prefers direct answers, no trailing offers" |
+
+Six of the eight are agent domains; `committee_decisions` is shared and `bunnita_taste` is user-scoped. So _eight categories_ does not mean _eight agents_ - the domain count and the committee roster are different numbers and must not be inferred from one another. The current agent roster and the `--agent-id` value for each member are canonical in `memory/entity-partitioning.md`; do not treat this ownership table as the roster.
+
+**Superseded record - the table carried six until 2026-09-14.** Until then it was the v1.0 standard's table, which predates the six-member committee, and S\\u00f8ren Aalto and Renata Ferreira had no owned category in it. Four of the eight are agent domains under the original roster and two under the Round 26 expansion; `committee_decisions` was shared and `bunnita_taste` user-scoped then as now, which is why eight categories still does not mean eight agents. Resolved to eight by convener direction 2026-09-14 and authorized for application in v1.7 Wave 2, closing `knowledge-base/INDEX.md` contested #7. The deferral rationale that held the count at six - preserving the shipped v1.6 build's `MemoryWrite` enum - was void: `grep -c MemoryWrite Builds/bunnita-system-prompt-v1-6.md` returns `0`, against `1` for v1.5, where the enum actually lives. Nothing in a build was being protected.
+
+**Two other locations still read six, and both are already subordinate to this entry.** `Subagents/mem0-interaction-standard.md` \\u00a73 enumerates six, and this entry's `supersedes` frontmatter names that exact section, so the standard's count is superseded by declaration rather than in conflict. The standard governs API-level correctness; category _ownership_ is operational discipline, which is this entry's authority. `Proposals/knowledge-base-structure.md:45` describes the planned shape of this file and is a formation proposal, not a canonical source. Neither was edited on 2026-09-14; both are recorded here so a repository sweep that finds six in them does not read it as an open contradiction.
+
+**The count is asserted here, not in a build.** The Document-Truth Audit's category count check takes this entry as its subject: it asserts that the table above enumerates eight and that the six agent-owner rows reconcile against the roster in `memory/entity-partitioning.md`. A build is not required to carry a category enum, and v1.7 deliberately does not - core names this entry as the pointer and the vocabulary stays here (`Proposals/v1.7-spec/requirements.md` R7). If a future build does introduce an enum, it lists all eight, and the check then has two subjects rather than one.
+
+### Domain and self-critique tags per agent
+
+| Agent | agent_id (simple) | Domain categories | Self-critique tag |
+| --- | --- | --- | --- |
+| Isabella | `isabella-marchetti` | `safety_architecture` | `[self-critique] isabella` |
+| Daniel | `daniel-okonkwo` | `tool_architecture` | `[self-critique] daniel` |
+| Priya | `priya-krishnamurthy` | `memory_architecture` | `[self-critique] priya` |
+| Marcus | `marcus-chen` | `tone_ux_architecture` | `[self-critique] marcus` |
+| S\\u00f8ren | `soren-aalto` | `engineering_architecture` | `[self-critique] soren` |
+| Renata | `renata-ferreira` | `integration_verification` | `[self-critique] renata` |
+| Zachari | (user_id only) | `bunnita_taste` | N/A |
+
+The two rows added on 2026-09-14 take the ASCII stem of the `--agent-id`, so `soren` rather than `s\u00f8ren`. Tags are searched as literal strings (`memory/tag-conventions.md` \\u00a7Retrieval), so a non-ASCII retrieval key would split the query surface between the two spellings and make one half unfindable by anyone typing the other.
+
+## The nine interaction types
+
+```text
+user_preference | self_critique | committee_deliberation | skill_analysis |
+tool_observation | safety_incident | boundary_proximity | prompt_effectiveness |
+project_context
+```
+
+These are the `interaction_type` argument to MemoryWrite. They are written in snake_case without brackets - `self_critique`, not `[self-critique]`. The bracketed forms are content tags.
+
+Adjacent to interaction type, MemoryWrite also carries a **type**: `user_preference | project_context | feedback | reference | capability_meta`. Type and interaction_type are separate fields that share two value names (`user_preference`, `project_context`); do not collapse them.
+
+## The confidence scale
+
+Four anchors on a 0.5-1.0 range:
+
+| Value | Meaning |
+| --- | --- |
+| `0.5` | Speculation |
+| `0.7` | Observation |
+| `0.9` | Confirmed fact |
+| `1.0` | Committee-consensus decision |
+
+Two thresholds depend on this scale:
+
+- **Citation** - cited memories must be hot or warm with confidence >= 0.7. Below that, a memory may inform your thinking but must not be presented as established (see `memory/content-style.md`).
+- **Dedup** - the write-time reinforce-instead-of-duplicate gate sits at >= 0.7 (see `memory/content-style.md`, including its Contested section).
+
+Self-critique writes are constrained to a narrower band: the content form is `[self-critique] \{agent_name\} \{specific observation\}. confidence=\{0.5-0.9\}.` The `1.0` anchor is unavailable to a self-critique because `1.0` denotes committee consensus, which a single agent cannot assert about its own work.
+
+## Contested
+
+The nine interaction types are attributed to a source that does not contain them.
+
+- **Claim A - the list belongs to the mem0 standard.** `Builds/bunnita-system-prompt-v1-5.md` introduces the list as "Interaction types from the mem0 standard" and elsewhere calls it "the 9-type standard."
+- **Claim B - the mem0 standard has no such list.** `Subagents/mem0-interaction-standard.md` v1.0 enumerates ten `[tag]` content prefixes in \\u00a76 and six categories in \\u00a73, but never enumerates `interaction_type` values anywhere.
+
+The nine-value list is therefore transcribed above from the v1.5 build, which is the only source that states it. Its provenance as a mem0-standard rule is unverified.
+
+Separately, the membership of the list changed between builds without a recorded decision: `Builds/bunnita-system-prompt-v1-3.md` lists **eight** types, omitting `boundary_proximity`; `Builds/bunnita-system-prompt-v1-5.md` lists **nine**, adding it. This reads as version progression rather than live disagreement - v1.5 supersedes v1.3 - but no changelog entry documents the addition, so the nine-value list is recorded here as current-by-recency, not as ratified.

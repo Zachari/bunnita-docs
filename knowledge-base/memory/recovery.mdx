@@ -1,0 +1,135 @@
+---
+title: "Graph Recovery"
+operation: "memory-recovery"
+summary: "Graph contamination repair; the ratified 8-step full protocol and golden backup restore"
+tier: "all"
+authority: "canonical"
+supersedes: "bunnita-operational-knowledge-v1-35.md \\u00a74"
+last_verified: "2026-09-14"
+sidebarTitle: "Graph Recovery"
+description: "Graph contamination repair; the ratified 8-step full protocol and golden backup restore"
+---
+
+Recovery is the riskiest, least-automated moment in the system: it deletes real memories and reseeds them by hand. The ratified protocol is a full-slate wipe and re-seed, executed in order. Do not improvise a shortcut - a partially-recovered graph is harder to diagnose than a contaminated one, because the contamination is no longer uniform.
+
+Recovery operations use a _new_ `run-id`, never the corrupted one. Identifier mechanics are canonical in `memory/entity-partitioning.md`; this entry covers only the sequence.
+
+**Every step in this protocol is project-scoped to `--app-id bunnita`.** Ruled by convener direction (Zachari, 2026-09-14) - see `## Resolved` below. A recovery asserts and verifies state _within_ Bunnita and leaves every other project standing. Any command in a recovery that omits `--app-id bunnita` is a defect in this runbook, not a broader check.
+
+## When to use recovery
+
+Trigger recovery when any of these are true:
+
+- Memories appear under wrong `agent_id` in `mem0 list`
+- Graph has orphaned memories from a malformed scope
+- Agent-scoped listing returns zero results when it should return >0
+- Content lacks `[tag]` conventions
+
+## Recovery steps (in order)
+
+The numbering stays at eight because `bunnita-operational-knowledge-v1-35.md \u00a74`, `knowledge-base/INDEX.md` and four analysis starters all cite this as "the 8-step protocol." The sanitization gate added below is therefore **2a**, a mandatory sub-step of step 2, rather than a ninth step - renumbering would break the count in seven documents that name it.
+
+1. **Inventory the damage.** List all memories by scope to identify contamination:
+   ```bash
+   mem0 list --user-id zachari --app-id bunnita -o json > damage-report.json
+   ```
+2. **Export golden backups.** If backups exist in `mem0_backup/`, read them - but do **not** treat them as restorable input yet. They are not in restorable form. Proceed to 2a before any delete.
+   - **2a. Sanitize the backup into a restore plan.** Mandatory gate. A restore from `mem0_backup/` is an **authoring** operation, not an extraction. See `## Restore sanitization` for what must be constructed and why. Do not begin step 3 until the restore plan exists in writing, because step 3 destroys the only other copy.
+3. **Delete contaminated memories.** One at a time by ID:
+   ```bash
+   mem0 delete <memory_id>
+   ```
+   `mem0 delete` takes an ID and carries **no scope flags** - it cannot be constrained to `--app-id bunnita`. The project scoping of this step comes entirely from the ID list originating in step 1's project-scoped inventory. Never delete an ID from any other source, and never hand-edit the ID list.
+4. **Verify clean slate - within the project.**
+   ```bash
+   mem0 list --user-id zachari --app-id bunnita
+   ```
+   Returns zero. `--app-id bunnita` is required: without it the success condition becomes "Zachari's entire cross-project memory is empty," which is not the state a Bunnita recovery is trying to reach and not a state anyone should try to reach.
+5. **Re-seed from the restore plan.** Every `mem0 add` carries all four entity partition identifiers and a `[tag]` prefix. Seed the plan built in 2a, not the raw backup content.
+6. **Verify agent isolation.** Each agent-scoped listing returns only their memories. The roster is the six current members plus the committee scope, per `memory/entity-partitioning.md`:
+   ```bash
+   mem0 list --agent-id isabella-marchetti --user-id zachari --app-id bunnita
+   mem0 list --agent-id daniel-okonkwo      --user-id zachari --app-id bunnita
+   mem0 list --agent-id priya-krishnamurthy --user-id zachari --app-id bunnita
+   mem0 list --agent-id marcus-chen         --user-id zachari --app-id bunnita
+   mem0 list --agent-id soren-aalto         --user-id zachari --app-id bunnita
+   mem0 list --agent-id renata-ferreira     --user-id zachari --app-id bunnita
+   mem0 list --agent-id bunnita-v1          --user-id zachari --app-id bunnita
+   ```
+   Zachari's `[taste]` memories are user-scoped by design and have no `--agent-id`; they are verified by step 7, not here.
+7. **Verify cross-graph.**
+   ```bash
+   mem0 search "bunnita" --user-id zachari --app-id bunnita
+   ```
+   Returns across all _agent_ scopes within the project - that is what "cross-graph" means here. Omitting `--app-id` would let another project's memories satisfy this check, passing the verification for the wrong reason.
+8. **Log the recovery.** Write a `[process]` memory documenting the recovery, with all four identifiers and the committee scope:
+   ```bash
+   mem0 add "[process] Graph recovery executed. Cause: {root_cause}. Deleted: {count}. Re-seeded: {count}. Sanitization deviations: {list}." \
+     --agent-id bunnita-v1 --user-id zachari \
+     --app-id bunnita --run-id mem0-run-MM-DD-YYYY
+   ```
+
+**What the `--app-id` audit found.** Every step above was checked against the source text in `bunnita-operational-knowledge-v1-35.md \u00a74` on 2026-09-14. The omission was not confined to step 4: steps **4**, **6** (all four of its commands) and **7** omitted `--app-id bunnita` in both the source and the earlier version of this entry - six commands in total. Steps 1 and 5 were already correct. Step 3 cannot carry the flag at all, which is why its scope guard is procedural rather than syntactic. All six omissions are corrected above.
+
+## Restore sanitization
+
+Step 2a. The `mem0_backup/` directory cannot be replayed. What follows was verified directly against the six files on 2026-09-14 (40 records total: `bunnita-v1` 10, `priya-krishnamurthy` 8, `zachari` 7, `isabella-marchetti` 6, `marcus-chen` 5, `daniel-okonkwo` 4).
+
+**Restoring is authoring.** Four independent findings force this. Each is a gap the restorer must fill by writing something the backup does not contain:
+
+1. **Tags must be added, not extracted.** Step 2's original wording - "extract their content and tags" - describes an extraction that cannot succeed: **zero of the 40 records carry a `[tag]` prefix** (`grep -c '"memory": "\['` returns 0 across all six files). Every tag must be _assigned_ by judgment from the content, against the closed ten-tag vocabulary in `memory/tag-conventions.md`. Do not invent an eleventh tag to make a record fit.
+2. **Entity partitioning must be reconstructed, not verified.** The per-record key set is uniform and minimal - `id`, `memory`, `created_at`, `categories` - and nothing else. No record carries `agent_id`, `app_id`, `run_id`, `user_id` or `confidence`. Attribution exists only in a file-level `scope` block (`agent_id` for five files, `user_id` for `mem0-zachari.json`), so **the backups assert entity partitioning by filename rather than recording it per memory.** A restore cannot verify that a given memory was correctly attributed before the contamination; it can only re-assert the filename's claim. Where the filename's claim is what is under suspicion, the backup is not evidence.
+
+   One correction to a claim previously made about these files: every record **does** carry a `categories` field. It is not absent - it holds only the Platform's generic auto-classifications (`software engineering` x35, `debugging systems` x7, `null` on 5 records). **None of Bunnita's committee-owned categories appears anywhere in the backups** - not one record, under either reading of how many there are (`knowledge-base/INDEX.md` #7 records 6 vs 8 as unresolved; this finding holds either way). This is worse than absence for a verbatim restore, which would re-import a wrong classification rather than an empty one.
+3. **Superseded facts must be corrected, not restored.** The content predates two changes of declared target and would re-inject facts the project has since abandoned. Verified present:
+   | In the backup | Status |
+   | --- | --- |
+   | "the target model for Bunnita v1.1 is DeepSeek V4 Pro Max" | **Wrong when written, not merely superseded.** DeepSeek was an iteration substrate used in high volume while the core's foundation was weighed - never an intended target (convener correction, 2026-09-14). Do not restore. |
+   | "the token budget ... is approximately 2,250 words" | A v1.1 figure. Not the current build's measurement. |
+   | "targeting Opus 4.7 and GPT 5.5-level capability" | Superseded. |
+   | "cloud graph memory ... replacing Mythos's missing RDT architecture" | Borrowed theory, deleted at v1.6. Do not restore. |
+   | `bunnita:agent:{name}` inside content (4 records) | Legal in content, and correct to keep - see below. |
+
+   Restore these **corrected against the current declared target** - Opus 5 the assumed/default tier, Sonnet 5 light verificaer, Fable 5 Mythos-class horizon, Haiku 4.5 light verification - or, where a record is purely a v1.1 artifact with no current counterpart, mark it historical in the content rather than restating it as present tense. Restoring a superseded target verbatim reintroduces the exact contradiction the Document-Truth Audit exists to catch.
+4. **The roster is six, the backups cover four.** There is no backup file for S\\u00f8ren or Renata, and no mention of either anywhere inside the six files. A restore therefore reconstitutes a four-agent graph while step 6 verifies seven scopes against the six-member write roster. **Expect two empty agent scopes after a restore.** That is the correct and expected outcome, not a step 6 failure - record it as such rather than treating it as contamination.
+
+**One byte-level hazard.** The content contains non-ASCII characters that break literal matching: `U+2011` non-breaking hyphen (x9), `U+202F` narrow no-break space (x2), `U+2019` right single quote (x1). The vision record reads `Opus\u202f4.7`, so a `grep` for the plain string `Opus 4.7` finds nothing. Match on substrings, or normalize first, when locating records to correct.
+
+## Golden backup format
+
+Backups use v0.1 conventions. When restoring:
+
+- Keep the semantic content, except where finding 3 above requires correcting it
+- Apply v1.0 `[tag]` conventions to the content string - assigning the tag, per finding 1
+- Use simple `--agent-id` values at the CLI level
+- Add `--app-id bunnita --run-id mem0-run-MM-DD-YYYY` (a _new_ run-id, never the corrupted one)
+
+The `bunnita:` prefix in a restored backup's content is not an error to strip - it is legal inside a content string. It is only an error as a CLI parameter value.
+
+## Resolved
+
+### The scope of the step 4 clean-slate check - :white_check_mark: resolved 2026-09-14
+
+**Resolved by convener direction (Zachari, 2026-09-14): the recovery protocol is project-scoped.** All eight steps assert and verify state within `--app-id bunnita`.
+
+What the ambiguity was, kept for provenance:
+
+- **Claim A - user scope.** Step 4 read verbatim, in both this entry and `bunnita-operational-knowledge-v1-35.md \u00a74`: "`mem0 list --user-id zachari` returns zero." Taken literally this required Zachari's entire memory graph, across every project, to be empty.
+- **Claim B - project scope.** Step 1 inventories with `--app-id bunnita`, and `bunnita-operational-knowledge-v1-35.md \u00a71.1` gives `--app-id` the purpose of separating "Bunnita from all other projects." Under app-level partitioning, a Bunnita recovery should assert zero _within_ `--app-id bunnita` and leave other projects standing.
+
+Claim B was ratified. Claim A was never anyone's intent - it was an omitted flag that read as a specification.
+
+Why it stayed dangerous for as long as it did, which is the part worth keeping: read-rules permit omitting `--app-id` on a read (`memory/entity-partitioning.md`), so **Claim A's command was syntactically legal and would execute without complaint.** Nothing at the command line distinguished the safe reading from the destructive one. `knowledge-base/INDEX.md` recorded this as contested fact #1 and identified it as the only item on its list "whose literal execution is destructive and irreversible," instructing readers to treat the procedure as project-scoped until ruled otherwise. That interim instruction is now the ratified rule.
+
+The source monolith still carries the unscoped step 4 verbatim; it is immutable and is not edited by this entry, which supersedes it per the `supersedes` field in the frontmatter. `knowledge-base/INDEX.md` row #1 still lists this as open and needs the same resolution applied by whoever owns that file.
+
+## Contested
+
+### Whether a targeted recovery path exists
+
+_Unchanged and still open. Explicitly out of scope for the 2026-09-14 pass, which resolved only the step 4 scope question._
+
+- **Claim A - one protocol only.** `bunnita-operational-knowledge-v1-35.md \u00a74` defines a single, ratified 8-step full-slate procedure and no alternative. Under this reading the full protocol applies to all contamination regardless of scale.
+- **Claim B - two protocols, split at 10 memories.** `Proposals/knowledge-base-structure.md` (INDEX example row) describes this entry as "Graph contamination repair; targeted (\<10) or full," presupposing a targeted path. The underlying proposal is in `Builds/bunnita-opus-4.6-analysis-report-2026-06-18.md \u00a77`: _"Add a targeted recovery path: for contamination affecting \<10 memories, allow selective delete + re-add without full slate wipe. Reserve the 8-step protocol for systemic contamination (wrong app_id, wrong user_id, or >50% of memories affected)."_ The same report lists it under future work - "Targeted graph recovery - Add a partial recovery path for \<10 contaminated memories without full slate wipe. Impact: medium... Feasibility: medium (requires new protocol design)" - and rates the current protocol "Adequate but lacks granularity. The 'nuclear option' is the only option."
+
+The targeted protocol is a recommendation whose steps were never authored; the design proposal's summary line assumes it shipped. No targeted procedure is transcribed here because no source defines one. Until a ratified proposal supplies the steps, the 8-step full protocol is the only executable path.

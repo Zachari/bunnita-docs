@@ -1,0 +1,124 @@
+---
+title: "Model Selection"
+operation: "task-routing, model-selection"
+summary: "Route by task class to capability tier; ladder corrected 2026-09-14 — Opus 5 is the assumed/default tier, Sonnet 5 light verification, Haiku 4.5 the L2 fallback floor (not a work tier), Fable 5 and 5.1 at or above assumed"
+tier: "all"
+authority: "canonical"
+supersedes: "zara-opus-5-operation-modes.md §Mode 2: EFFICIENT (routing table) + AGENTS.md §Model Usage & Credit Optimization Strategy"
+last_verified: "2026-09-30"
+sidebarTitle: "Model Selection"
+description: "Route by task class to capability tier; ladder corrected 2026-09-14 — Opus 5 is the assumed/default tier, Sonnet 5 light verification, Haiku 4.5 the L2 fallback floor (not a work tier), Fable 5 and 5.1 at or above assumed"
+---
+
+Which capability tier handles which class of task. This entry is deliberately written so that it works without knowing the target model: routing rules are expressed in terms of **task class → capability tier**, and the translation from tier to a concrete model name is isolated in exactly one table. That design was written against a four-way disagreement about the declared target; when the convener resolved it on 2026-09-14, settling it was a single-table edit, exactly as intended (see `## Resolved — declared target model`).
+
+This entry now carries `authority: canonical` on the tier → model mapping. It held `authority: reference` only because the target fact was contested and no entry may be canonical on a contested fact; with the conflict resolved by convener direction, the bar is met. The routing logic itself remains a faithful transcription of what the operation-modes documents already ratified.
+
+## The four capability tiers
+
+| Tier | What it is for | Reasoning expectation |
+| --- | --- | --- |
+| `light-verification` | Mechanical work with no judgment component | None. Never route reasoning here |
+| `standard-execution` | Well-scoped work using known patterns | Single-pass, pattern-following |
+| `complex-analysis` | Multi-step work applying established methods | Sustained reasoning over known frameworks |
+| `frontier-reasoning` | Novel, architectural, or high-stakes work | Novel inference and synthesis |
+
+## Task class → tier
+
+| Task class | Tier | Examples |
+| --- | --- | --- |
+| Structural / format verification | `light-verification` | XML tag pairing, file existence, reference checking, word counts, "are all tags paired?" |
+| Simple classification and lookup | `light-verification` | Category A or B, extraction, function signatures, single yes/no |
+| Edge-case and minimal-input testing | `light-verification` | Empty states, single items, minimal inputs |
+| Feature implementation, bug fixes, tests | `standard-execution` | Translating a settled design into code |
+| Drafting and summarization | `standard-execution` | First pass before refinement, condensing existing analysis |
+| Quick change-impact validation | `standard-execution` | "Does this change break anything?", single-dimension evaluation |
+| Document reading for context | `standard-execution` | Reading `conductor/`, `Subagents/`, extensions |
+| Routine architectural review | `complex-analysis` | Applying a known framework to a new variant |
+| Standard analysis questions | `complex-analysis` | Established evaluation procedures, multi-file reasoning, detailed review |
+| Implementation guidance | `complex-analysis` | Turning architecture into an implementation plan |
+| Iteration on an understood solution | `complex-analysis` | Refining something already scoped |
+| Architecture and system design | `frontier-reasoning` | Multi-layer abstraction, governance-model evaluation |
+| Safety-boundary and adversarial analysis | `frontier-reasoning` | Edge cases where a reasoning failure is unacceptable |
+| Self-referential and frontier comparison | `frontier-reasoning` | Comparing Bunnita against the substrate's own architecture |
+| Committee deliberation on version boundaries | `frontier-reasoning` | High-stakes governance decisions |
+| Final synthesis, verdict, scoring | `frontier-reasoning` | Consolidating many assessments into one judgment |
+| First pass on a problem of unknown difficulty | `frontier-reasoning` | You do not know it is hard until you think about it |
+
+Default when the class is unclear: `complex-analysis`. It is the safe middle and the documented fallback.
+
+## Routing rules
+
+**Suspended under FRONTIER.** In all three sub-modes (STEADY, OPEN, MAX) every task, including the staged passes below, the escalation targets and every subagent, runs on the one declared `model_id`. The routing rules and the staged pattern apply only when FRONTIER is off. Canonical: `routing/frontier-mode.md`.
+
+Route to the **cheapest tier that clears the task's quality bar**, then escalate on evidence rather than pre-escalating the session. Three rules are firm:
+
+**Never route reasoning or judgment to `light-verification`.** That tier has no adaptive thinking and no reliable self-correction. It does mechanical work only. This is the one routing rule that is a correctness constraint rather than a cost preference.
+
+**Escalate one tier on the specific task, not the whole session.** The escalation triggers are observable in the output: shallow analysis, low stated confidence, excessive hedging, or an answer that gestures instead of citing. When a lower tier produces one of those, re-run that task one tier up and leave the rest of the session where it is.
+
+**The hardest step and the final synthesis step always get `frontier-reasoning`,** regardless of what the rest of the session was routed to. A session that routes twenty tasks cheaply and then also synthesizes them cheaply has saved nothing worth having.
+
+Escalation is additionally mandatory — not discretionary — when the task requires self-knowledge about the substrate's own architecture, or knowledge of the vendor's internal design decisions, or a prediction about Mythos-class behavior.
+
+## Staged analysis pattern
+
+For a large analysis with many questions, stage rather than route each question independently:
+
+1. `light-verification` first — scan for structural issues, broken references, obvious gaps.
+2. `complex-analysis` second — the substance, using established frameworks.
+3. `frontier-reasoning` last and only if needed — genuinely novel findings, multi-layer conflicts, or anything the second pass left ambiguous.
+
+The documented saving for this pattern is up to 39% against running everything at `frontier-reasoning`, with the capability floor preserved because the escalation path stays open. Cache the stable system prompt across every call in the sequence — the input discount is roughly 10x on a cache hit and applies regardless of tier (`routing/effort-calibration.md` carries the cache economics).
+
+## Tier → model mapping
+
+**Corrected by convener direction, 2026-09-14 (second direction of that date).** The ladder shifted up one position: **Opus 5 is the default / standard-execution tier**, not only the frontier one. This is the capability-native thesis expressed in model identities rather than implied — for Bunnita, "standard execution" _is_ a frontier model, and everything below it is degradation.
+
+| Position | Model | Effort | Scaffold |
+| --- | --- | --- | --- |
+| At or above the assumed tier | Fable 5, Fable 5.1 | — (native) | never |
+| **Assumed tier — default / standard execution** | **Opus 5** | high–xhigh | never |
+| Light verification | Sonnet 5 | medium–high | conditionally (task shape **or** observed uncertainty) |
+| **L2 fallback floor** | Haiku 4.5 | — (no adaptive thinking) | always |
+| No declaration | resolves to Haiku 4.5 | — | always |
+
+**What this corrects, and it is a naming problem as much as a routing one.** The four inherited tier names — `light-verification`, `standard-execution`, `complex-analysis`, `frontier-reasoning` — were authored when Sonnet was the declared target. They do not survive a ladder whose default is frontier: **three of them (`standard-execution`, `complex-analysis`, `frontier-reasoning`) now collapse onto Opus 5**, and `light-verification` moves up to Sonnet 5. The task-class table above remains valid as written; what changed is that its top three rows all resolve to the same substrate, separated by **effort**, not by model.
+
+**Haiku 4.5 is no longer a routing destination.** It was the destination for mechanical work; it is now the **floor you assume when you cannot confirm what you are.** Mechanical work — tag pairing, reference existence, word counts — routes to Sonnet 5. Haiku 4.5's only role is degradation: it is what an absent declaration resolves to. It is deliberately **not renumbered**; the standardization moved the Opus and Sonnet tiers a generation and left Haiku where it is.
+
+**Fable 5 and Fable 5.1 sit at or above the assumed tier.** Neither is currently routable — route the default to Opus 5 and read the Fable clause as a forward commitment. **Fable 5.1 is new to this repository as of 2026-09-14**, added by convener direction; it appeared in no prior document, so this entry is its first record rather than a conformance of an existing reference.
+
+**The firm rule that survives the renaming:** never route reasoning or judgment to the fallback floor. That was previously stated as "never route reasoning to `light-verification`" — under the corrected ladder, light verification is Sonnet 5, which _can_ reason, so the constraint attaches to Haiku 4.5 and to the no-declaration case, not to a tier name.
+
+The earlier substrate-availability defect recorded here is resolved: the names above match the models the code actually uses. `scripts/committee/bootstrap.py` hardcodes `TOP_TIER = "claude-opus-5"` and `DOMAIN_TIER = "claude-sonnet-5"`, verified against `~/.kiro/crew/model_windows.json` on 2026-08-07 — the documents have now been aligned to what the committee bootstrap was already doing rather than the reverse.
+
+**DeepSeek V4 Pro Max is no longer a target of any kind** — not primary, not secondary, not a compatibility target. It may appear only in explicitly past-tense historical statements about what earlier versions were built for.
+
+## Resolved — declared target model
+
+**Resolved by convener direction: Zachari, 2026-09-14.** This was contested fact #3 in `knowledge-base/INDEX.md` and was marked **Blocking** — no entry could carry `authority: canonical` on the target-model fact while four sources disagreed, and any migration that hardcoded one of them would have fossilized the contradiction into machine-readable form.
+
+The resolution: **Opus 5** is the primary target, superseding every prior Opus 4.x declaration (4.6, "4.6+", 4.7, 4.8). **Sonnet 5** is the **light-verification tier**, superseding Sonnet 4.6. **Fable 5 and Fable 5.1** sit at or above the assumed tier. **Haiku 4.5** is the **L2 fallback floor and not a work tier** — an absent model declaration resolves there and the scaffold always loads. **DeepSeek V4 Pro Max** is no longer a target and is retained only as history. GPT-5.5 and Mythos 5 remain external comparison points, never targets.
+
+_Ladder corrected by the convener later on 2026-09-14, after this paragraph was first written. The superseded wording called Sonnet 5 the "secondary/domain tier" and Haiku 4.5 "light verification, unchanged" — one rung too low across the board, and it omitted Fable 5.1. Kept visible rather than silently overwritten, because this entry is canonical and every other document compares itself against it: a stale ladder here propagates everywhere by design._
+
+The four conflicting declarations are preserved below so the provenance survives the resolution. Each is recorded as it read before 2026-09-14.
+
+| Claim (pre-resolution) | Stated as | Source |
+| --- | --- | --- |
+| DeepSeek V4 Pro Max | "**DeepSeek V4 Pro Max** (on Max settings) … Selected by committee Round 10 (unanimous) after Claude Sonnet 4.6 became unavailable." | `conductor/tech-stack.md` §Target Model |
+| Opus 4.8 primary, Fable 5 next | Table row: `\| Target model \| Opus 4.8 (primary), Fable 5 (next) \|` | `conductor/product.md` (§ project-properties table) |
+| Sonnet 4.6 / DeepSeek V4 Pro Max | "**Claude Sonnet 4.6** • **DeepSeek V4 Pro Max**" | `README.md` §Target Models |
+| Opus 5 (recommended promotion) | "promote **Opus 5 to primary target**, keep Fable 5 as the Mythos-class horizon, and reclassify Opus 4.8 as a still-capable near-tier substrate. This is a one-line change to the _declared_ target…" | `Proposals/opus-5-release-briefing.md` |
+
+The convener direction adopted the fourth position for the primary target and extended it to the light-verification tier (Sonnet 4.6 → Sonnet 5). It went further than the briefing on one point: the briefing would have kept Opus 4.8 as a declared near-tier substrate, and the direction declares no near-tier substrate at all. That has one downstream consequence, recorded in `routing/capability-scaffold.md`: the scaffold's "on observed uncertainty only" load rule now maps to no declared model.
+
+Historical record, retained:
+
+- `Proposals/opus-5-release-briefing.md` identified the collision explicitly: a target promotion made on top of the existing divergences "would produce three simultaneously-stated primary targets," and it stated that the decision "is Zachari's call, not a spec refinement, and it must not be smuggled in as one." It was in fact resolved that way — by the convener, directly.
+- `Proposals/knowledge-base-formation-plan.md` recorded the same finding as **four** stated targets and concluded that extraction-first migration "would fossilize four target models into the KB and make the contradiction permanent and machine-readable." Isolating the mapping into the single table above is what kept that from happening.
+- `Builds/bunnita-opus-4.8-analysis-report-2026-06-18.md` listed "a target model that disagrees with itself across documents" among the shipped v1.5 contradictions that motivated the Document-Truth Audit.
+- `Builds/bunnita-system-prompt-v1-6.md` claimed the target was already made uniform ("Target model uniform: 'Opus 4.8 primary, Fable 5 next.'"), which was true of the shipped prompt but not of `conductor/tech-stack.md` or `README.md`. That uniformity check passed on a narrower scope than its wording implied.
+
+The target-uniformity check in the Document-Truth Audit should now be re-run across all four files above. That check is not part of this entry and has not been run here.

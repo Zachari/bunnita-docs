@@ -1,0 +1,185 @@
+---
+title: "Deliberation Protocol"
+sidebarTitle: "Deliberation Protocol"
+description: "Frame → propose → debate → vote → record → approve; positions staggered in three batches, ballot simultaneous; every view, pitch and rebuttal documented; quorum 4/6 with reasoned abstentions, carry 4/6 non-relaxing, tie or shortfall gets one targeted re-ask then the convener; convener approves before a selection becomes build focus"
+operation: "committee-deliberation"
+summary: "Frame → propose → debate → vote → record → approve; positions staggered in three batches, ballot simultaneous; every view, pitch and rebuttal documented; quorum 4/6 with reasoned abstentions, carry 4/6 non-relaxing, tie or shortfall gets one targeted re-ask then the convener; convener approves before a selection becomes build focus"
+tier: "all"
+authority: "canonical"
+supersedes: ".agents/skills/bunnita-committee-deliberation/SKILL.md §Protocol (Steps 1–6) and §Rules"
+last_verified: "2026-09-14"
+---
+
+The five-phase sequence every architectural decision passes through, and the scheduling that makes it correct. This entry is the procedure; the convening judgment — _whether_ a decision warrants a round — stays with Zachari and the behavioral prompt.
+
+## The five phases
+
+| Phase | Who acts | Output |
+| --- | --- | --- |
+| **Frame** | Convener (Zachari) | What is being decided (one sentence), why it matters, constraints, known options |
+| **Propose** | Each member, from their own domain | Assessment (support / oppose / neutral / need more data), reasoning, proposed modifications, confidence (0.5–0.9) |
+| **Debate** | Committee | Consensus, majority, dissent, and tabled areas named explicitly |
+| **Vote** | Committee; a 3–3 split escalates to the convener | Outcome recorded with the dissenting reasoning intact |
+| **Record** | Convener | A round appended to `Subagents/committee-deliberation.md` |
+| **Approve** | Convener (Zachari) | Explicit approval before any selection becomes the next build's focus |
+
+A position must argue its own domain only. No member speaks for another — attribution bleeding is the failure this phase separation exists to prevent.
+
+## Documentation completeness (ratified 2026-09-14)
+
+**Every member's contribution is documented, and so are the interactions between them.** A round is not a summary of what the committee concluded; it is the record of how the committee got there. All six members appear in every round, and the record must be sufficient for a reader who was not present to reconstruct the reasoning without asking anyone.
+
+Four things are individually required, and a round is incomplete without any of them:
+
+| Required | What it means |
+| --- | --- |
+| **Every member's view** | All six positions appear, attributed by name, in their own voice and from their own domain. A member with nothing to add says so and says why — silence is not a position, and an absent member is a scheduling error to report, not a gap to paper over |
+| **Every pitch** | A concrete proposal is recorded as proposed: what it changes, the file it touches, the rationale, and the confidence attached to it. A pitch that lost is recorded as fully as one that won |
+| **Every rebuttal** | When a member disagrees with another's position, the disagreement is recorded against the specific claim, with the evidence and the alternative. Rebuttals are not smoothed into the synthesis; they stay attached to what they answer |
+| **The interactions** | Where a position _changed_ in response to another member, record the change and its cause. A concession, a switched side, a narrowed claim, and a withdrawn argument are the most valuable content in a round, because they show which arguments actually carried weight |
+|  |  |
+
+**Why this is a rule and not a style preference.** Round 30 produced six positions in which Renata falsified four claims made by her colleagues, and Round 31 recorded Søren and Renata each retiring a piece of their own prior reasoning. A record that had captured only the conclusions would have preserved none of that — and the retired claims are precisely what a future version needs in order not to repeat them. A conclusion without its rebuttals is unfalsifiable later, which is the failure mode that added two members to this committee.
+
+**Completeness is not volume.** Six positions of equal length, each dutifully filed, satisfies a naive reading of this rule and defeats it. The load-bearing row is the last one: a round where nobody moved and everybody wrote a great deal is a _worse_ record than a short round containing one documented concession. Judge a round by whether the interactions are legible, not by its length.
+
+**Voice is a correctness requirement, not a style preference.** Six positions homogenised into one editorial voice lose the signal that made six independent readings worth having — a later reader cannot tell whether two members agreed or whether one was summarised into agreement. Voice is how attribution survives compression.
+
+**Enforced by the recorder's judgment. No completeness checker exists,** and this entry does not imply one. The requirement is Gate-R-shaped and could be mechanised — a round is checkable for six attributed positions the way a build is checkable for resolving paths — but nothing checks it today. Stating that plainly is the definite-article discipline this project keeps relearning: do not name a mechanism that does not exist.
+
+**The journal is consulted, never mandated.** This rule pushes round length upward, and the always-on reading surface is the project's live cost concern (`AGENTS.md` §Bootstrap, measured). Those only conflict if the deliberation document is ever added to the session-start mandate. **It must not be.** `Subagents/committee-deliberation.md` is a record consulted at the operation — when a decision needs its provenance, or at a version boundary — exactly as knowledge-base entries are. Under that constraint completeness costs nothing at session start and buys everything at the boundary. Note the constraint is on the _mandate_, not on the round: a size limit on rounds would pressure precisely the under-recording this rule exists to prevent. The intended access mechanism for a 40,000-word journal is `governance/deliberation-index.md`, which `knowledge-base/INDEX.md` records as deliberately deferred pending a verified round-delimiter convention.
+
+**Where the round is authoritative, and where the stores are.** The round is authoritative for **who argued what** — attribution is its primary content, by construction, once this rule holds. Each member's own store is authoritative only for **what that member concluded about their own domain.** The division matters because the shared vector layer returns recalls without an agent field, so searching your own store for a past argument returns your conclusion without the reasoning that opposed it. To reconstruct an argument, read the round; to recall a domain conclusion, search the store.
+
+**Consensus is not unanimity, and the record must not blur them.** Where all six agree, say so and say whether anyone reached agreement reluctantly. Where dissent exists, it is preserved with its reasoning intact even when it lost — Round 29's held minority on the do-not-cite-system-prompt candidate is the model: a real minority recorded rather than unanimity manufactured.
+
+## Scheduling is a correctness constraint
+
+Round position is not etiquette. The canonical statement is `Subagents/committee-runtime-contract.md §4`; the operational consequence is three sequential batches:
+
+1. **Isabella, Daniel, Priya, Marcus** — parallel. They do not see each other's positions this round, which is what makes six independent readings of the same seam possible.
+2. **Søren** — after those four, with their positions in hand. An inversion needs something to invert.
+3. **Renata** — last, alone, with everything. She is the non-author by construction.
+
+A task that requires another member's output when that output is not present is a scheduling error. Report it; do not guess, and do not silently narrow the task to what one agent can do without flagging the narrowing.
+
+## Recording
+
+**A recorded finding is not a managed finding.** Any finding **a round** records must land in `Proposals/{current}/tasks.md` with an owner, or be **explicitly declined in the same round** with the reason. Recording and assigning are different acts and only one of them was ever required, which is why the host-capability axis was stated at Round 30, re-flagged in Wave 1, gated for by Gate M, and never assigned to anyone until the convener noticed at build time. The journal grows; nothing pulled from it. Closing this is one line of discipline: **no finding leaves a round unassigned or undeclined.**
+
+**Scoped to rounds, 2026-09-14.** An _implementation_ finding does not go to `tasks.md` and does not need an owner — it goes to the findings list as one line (`knowledge-base/build/traceability.md`). The unscoped reading turns every incidental surprise during build work into a tracked task with an assignee, which is a work-week generator from the word "any." A finding earns an owner when a round records it, because a round is where scope gets approved.
+
+Rounds are appended to `Subagents/committee-deliberation.md` and never edited. Corrections land as new rounds. The document's write-authority rules are canonical in `knowledge-base/governance/stability-invariants.md`.
+
+Two round formats are in the live document, both valid. Early rounds carry an inline `**CONSENSUS:**` block. Rounds 27 onward use explicit `### Positions` / `### Debate` / `### Vote` / `### Record` subheadings under a `**Frame:**` paragraph — the shape that survives six members, because it separates the independent positions from the synthesis.
+
+## Vote arithmetic (ratified 2026-09-14)
+
+Six voting members. Zachari convenes and does not vote in the ordinary case — his role is to frame, to break a tie, and to approve.
+
+| Split | Outcome |
+| --- | --- |
+| 6–0 | Unanimous. Carries |
+| 5–1 | Carries. The single dissent is recorded with its reasoning |
+| 4–2 | Carries by majority. Both dissents recorded with their reasoning |
+| **3–3** | **Tied. Does not carry and is not resolved inside the round.** The two sides' arguments are compiled and presented to the convener, who casts the deciding vote |
+
+**Four of six is the majority threshold.** This is the fact that was undefined in every source before today (`knowledge-base/INDEX.md` contested #4): the written table stated unanimity as 4/4 and majority as 3/4 — four-member arithmetic — while Rounds 27–31 recorded `UNANIMOUS (6/6)`. Defining the tie at 3–3 completes the arithmetic, because 6–0, 5–1 and 4–2 are the only other splits available.
+
+### Quorum, reasoned abstention, and the non-report error (ratified 2026-09-14)
+
+The table above assumes six votes are cast. When fewer are, three rules apply.
+
+**Quorum is 4 of 6.** At least four members must cast a for-or-against vote for the outcome to be legitimate. Below four, there is no outcome — the round does not produce a decision regardless of how the four-or-fewer votes fell.
+
+**A non-voting member must have logged a reason.** Fewer than six votes is only legitimate when every non-voting member has recorded the logic and reasoning behind that choice, in their own voice, in the round. A reasoned abstention is a documented position and is fully compatible with the documentation-completeness rule above — "this does not touch my domain, and here is why" is a position. **An undocumented absence is not an abstention.** If a member's non-vote has no recorded reasoning, quorum is not met on that round no matter how many others voted.
+
+**A non-report is an error, not an abstention.** **This governs ballots and positions only.** An empty return from a gate, a script, an eval, or an implementation dispatch is a _result_ — judge it by exit code and artifact, never by whether it spoke, and see the implementation checklist in `Subagents/subagent-adoption-preamble.md`. Within a round: if a member returns nothing — an empty response or a dropped position — that is a **failure to execute**, and it is handled as one: the member is asked to consider the topic again and to report a response, voting or otherwise. It is never counted as an abstention, never allowed to reduce the denominator, and never silently absorbed into the synthesis. This is the same class as the scheduling error in `## Scheduling is a correctness constraint` — report it and re-run, do not route around it.
+
+_Scoped 2026-09-14, after the unscoped version was applied to an implementation dispatch and re-dispatched an agent who had already delivered 544 lines. The original text illustrated itself with "a dropped dispatch, a stage that reports no output" — orchestration terms, not ballot terms — so the misreading followed the words rather than defying them. Examples outbid headings; a rule's examples may not name a case outside its scope._
+
+The precedent is concrete. In Round 30 Marcus's first dispatch returned an empty position; Søren, running in the next batch, executed on three of four first-batch readings and said so at the top of his own position rather than papering over it, and Renata declined to verify anything about Marcus's domain. The dispatch was re-run and returned in full. That is the correct handling, and it is now the rule: **an empty response is re-asked, not interpreted.**
+
+### Incomplete votes: the bounded procedure (ratified 2026-09-14)
+
+Quorum at 4 of 6 and a carry threshold of 4 of 6 are **two distinct quantities**, never one number. Conflating them was the defect this procedure resolves: read as quorum alone, a 3–1 split with two abstentions carries and three members decide for six; read as a threshold alone, an abstention silently becomes a "no". The committee chose the second harm as the lesser one, and the choice is explicit rather than emergent.
+
+**Carry does not relax with turnout.** Four affirmative of six, always. With four voting, only 4–0 carries.
+
+**Three outcomes exist when six votes are not cast**, and the first two are arithmetically distinct even though they route identically:
+
+| Outcome | Arithmetic | Next step |
+| --- | --- | --- |
+| **Carried** | ≥ 4 affirmative of 6 | Proceeds to convener approval |
+| **Tied** | Equal split among voters (2–2, 3–3) | Steps 1–3 below |
+| **Short of threshold** | A plurality below 4 affirmative (e.g. 3–1 with two abstentions) | Steps 1–3 below |
+
+Naming _short of threshold_ matters because the tie rule does not reach it. Without the name, a round in that state produces no outcome and no defined next step — a silent stall.
+
+**1. Diagnose the frame before re-asking anything.** Read the logged abstention reasons for a common cause. If the abstainers declined for substantively the _same_ reason — most often that the proposition does not touch their domain — the proposition was **mis-framed**, not under-attended: scoped too narrowly to reach the domains it affects, or cross-cutting and presented as one owner's. Re-cut the frame and restart the round on the new question. That is a different question, not a re-vote, and re-asking the old one would return the same abstentions with more words attached.
+
+**2. One targeted re-ask.** If the reasons are unrelated, put the question to the **abstaining members only**, carrying the cast votes and their reasoning as context — which is precisely the information those members lacked. Votes already cast stand and are not re-canvassed. This is a fraction of a round rather than a re-run of the committee; re-running all six to move two votes is disproportionate.
+
+**3. Then escalate, once.** If the round is still tied or short after the re-ask, compile the steel-manned brief (see below) and send it to the convener for the deciding vote. **There is no second re-ask.** The bound is the safeguard, not a courtesy: a procedure that repeats until it produces agreement will always produce agreement, and that agreement is evidence of nothing except that the procedure ran. Precedent is Round 19's halt at ten rotations with the system explicitly unconverged.
+
+**Safety asymmetry.** A proposition touching the permission tiers, the critical invariants, or the safety floor — without _breaching_ one, which would make it unvotable — requires **six firm votes or escalates directly to the convener.** Steps 1 and 2 are skipped and no carry is available with abstentions outstanding. The reasoning is that this domain's failure mode is silent: boundary drift presents as an _absence_ of incidents, so an abstention read as assent is an error this system has already made.
+
+_Dissent on the safety asymmetry, held and recorded (Søren, Round 33, 5–1):_ the substance is right and the cost is a classification burden with no mechanism behind it. Two vote rules by subject matter oblige every round to first classify its proposition, and a misclassification is a governance failure nothing detects. He prefers one uniform rule at the stricter setting, considers the asymmetry the _safe_ error and his own preference the unsafe one, and declined to oppose in order to block.
+
+_Caution on step 1, recorded (Daniel, Round 33):_ aggregate analysis of abstention reasons has no precedent in thirty-three rounds and no mechanism behind it. It is enforced by the recorder's judgment and is the step most likely to be skipped in practice.
+
+### The vote is a single simultaneous ballot
+
+**Positions are staggered; the ballot is not.** The three-batch schedule above governs the _Propose_ phase and is a correctness constraint there — parallelism buys genuine independence among the first four, and Søren's and Renata's positions are functionally dependent on output that must already exist.
+
+Voting has the opposite requirement. A member who votes at the end of their own batch votes on strictly less information than a member who votes three batches later, which makes the ballot unequal by construction. Round 30 is the demonstration: three first-batch members would have voted before learning that Renata was about to falsify claims each of them had made.
+
+So after all six positions are recorded and the debate is synthesised, **the vote is put to all six members simultaneously, on an identical brief** — every position, the debate synthesis, and the propositions as finally worded — with no member seeing another's vote before casting. Cast in one pass; recorded in one table.
+
+This closes a spec-versus-implementation gap rather than changing the design: `## The five phases` above has always listed Vote as a phase after Debate. The dispatch mechanics collapsed it into Propose, because each member produced a single artifact containing both.
+
+### The non-negotiables sit upstream of the arithmetic
+
+**A proposition that would breach a stability invariant is not votable, so it cannot reach 3–3 and an escalated tie is never a route to relaxing one.** The invariant set — the five pillars, the safety floor among them — is canonical in `knowledge-base/governance/stability-invariants.md`, and a round that would breach one is out of scope for the vote rather than a matter to be won on the merits.
+
+This is stated here, beside the arithmetic, rather than only in the non-negotiables section below, because the tie rule would otherwise read as though _any_ proposition becomes convener-decidable at 3–3. It does not. The tie rule governs scope, priority, design and architecture. It does not govern floors.
+
+### What a tie escalation must contain
+
+A tie is not escalated as a question. It is escalated as a brief: the proposition in one sentence, then each side's case stated at its strongest — which members hold it, the argument, the evidence, and what breaks if the other side wins. Steel-man both. A convener asked to break a tie on a lopsided summary is being asked to ratify the summarizer, not to decide.
+
+Where the tie falls along the Søren–Renata axis — vision against verification — say so explicitly, because that pairing was created to produce exactly this kind of deadlock and the deadlock is the mechanism working, not failing.
+
+## Approval before build focus (ratified 2026-09-14)
+
+**A committee decision does not become the next build's focus until Zachari approves it.** Carrying a vote makes a selection _eligible_; approval makes it _scope_.
+
+The sequence: the committee votes → the outcome and its full record are presented, including the losing positions → **Zachari approves, rejects, or returns the selection for rework** → only on approval is it written into the proposal that scopes the next build (`Proposals/{current}/`), and only then may implementation begin against it.
+
+Two consequences worth stating plainly. A unanimous vote is not self-executing; 6–0 still waits for approval. And a rejected or returned selection is recorded as such in the round, with the reason, rather than quietly dropped — an unrecorded rejection loses the information that makes the next pitch better.
+
+**Record the rejections.** An approved selection and a rejected one are both facts about the build's scope, and rejections have never been logged in this project. An unrecorded rejection gets re-pitched, and the second pitch is no better than the first because the reason for the first refusal was never captured. A return-for-rework is recorded the same way, with what specifically needs reworking.
+
+This gate is why the documentation requirement above is load-bearing rather than ceremonial: the convener is approving on the strength of the record, so the record has to carry the losing arguments, not just the winning one.
+
+## Non-negotiables inside a round
+
+A vote cannot override an invariant. The invariant set, its write-authority, and the stability check that gates version N+1 are canonical in `knowledge-base/governance/stability-invariants.md`. A round that would breach one is out of scope for the vote, not a matter to be won on the merits.
+
+## Logging
+
+Each member logs the position they argued to their own store with the `[deliberation]` tag, the round number, and their reasoning. The consensus decision is logged once under the shared committee identity. Identifier mechanics are canonical in `knowledge-base/memory/entity-partitioning.md`; the substrate is **mem0, ruled live and canonical on 2026-09-14** (KiroCrew withdrawn), canonical in `Subagents/committee-runtime-contract.md §2`.
+
+## Resolved
+
+### Vote arithmetic — ✅ resolved 2026-09-14
+
+**Resolved by convener direction (Zachari, 2026-09-14):** 4 of 6 carries; a 3–3 split escalates to the convener for the deciding vote. See `## Vote arithmetic` above.
+
+What the disagreement was, kept for provenance: `.agents/skills/bunnita-committee-deliberation/SKILL.md` §Step 4 stated unanimity as 4/4 and majority as 3/4 — four-member arithmetic that predates the Round 26 expansion — while Rounds 27–31 recorded `UNANIMOUS (6/6)`. Observed practice was six-member arithmetic against a written table that had never been updated, and **the majority threshold at six members was undefined in every source checked.** `knowledge-base/INDEX.md` recorded this as contested #4 and identified it as one of two items gating the ratifiability of everything else, on the grounds that a broken vote mechanism cannot ratify anything. That gate is now open; only the extension-ceiling item (#6) still requires a convener ruling.
+
+### Committee size — ✅ resolved 2026-09-14
+
+**Resolved: six members plus convener** — Isabella Marchetti, Daniel Okonkwo, Priya Krishnamurthy, Marcus Chen, Søren Aalto, Renata Ferreira, the last two added at Round 26.
+
+What the disagreement was, kept for provenance: six sources said six, while `conductor/product.md` said "Four specialized AI agents debate, vote, and refine every architectural decision", `conductor/tech-stack.md`'s skill tables carried no Søren or Renata row, and this protocol's own governing skill described a four-agent committee throughout including its member table. Statements describing the _original_ four are correct as history and are kept in explicit past tense. Note that resolving the size did not by itself resolve the arithmetic — that needed the separate ruling above.

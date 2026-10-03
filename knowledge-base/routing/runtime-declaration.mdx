@@ -1,0 +1,101 @@
+---
+title: "Runtime Declaration"
+operation: "session-bootstrap, scaffold-load"
+summary: "The <runtime active_model=... /> contract — the reader declares it while adopting the build, the token set is closed at five, and an absent or unresolvable declaration resolves to the Haiku 4.5 floor and loads the scaffold"
+tier: "all"
+authority: "canonical"
+supersedes: "Proposals/v1.7-spec/design.md §D1 Layer 1 (\"the host harness declares the active model\" — retired at Round 35, no harness exists)"
+last_verified: "2026-09-30"
+sidebarTitle: "Runtime Declaration"
+description: "The <runtime active_model=... /> contract — the reader declares it while adopting the build, the token set is closed at five, and an absent or unresolvable declaration resolves to the Haiku 4.5 floor and loads the scaffold"
+---
+
+One line states which substrate is running, and every scaffold-load decision keys off it:
+
+```text
+<runtime active_model="opus-5" thinking="adaptive" effort="high" />
+```
+
+**Who writes it: the reader, and nobody else.** Bunnita's agents adopt the current build by _reading_ it — there is no harness that installs a prompt and no process that could inject a runtime line. So the declaration is stated by whoever adopts the build, at the moment they adopt it, from the session-bootstrap sequence in `AGENTS.md`. This entry exists because the earlier formulation named an actor that does not exist: `design.md` §D1 Layer 1 read "the host harness declares the active model", which lost its actor when the adopt-by-reading architecture was ruled on 2026-09-14, and the same design had already rejected model self-declaration as unreliable — leaving the primary layer with no candidate at all.
+
+**Why this is not self-declaration.** A model asked "are you a weak model?" answers unreliably; the v1.6 review established that its self-knowledge of its own runtime configuration is not dependable. The reader is not being asked to assess itself. It is being asked to copy one token from a bootstrap sequence into the line it is reading — a transcription, not an introspection. Where the reader genuinely does not know which token applies, the absent-declaration rule below covers it, and it resolves downward.
+
+## The grammar
+
+| Attribute | Required | Values | Owned by |
+| --- | --- | --- | --- |
+| `active_model` | yes | the closed token set below | this entry |
+| `thinking` | yes | `adaptive` · `off` | this entry; semantics in `routing/effort-calibration.md` |
+| `effort` | yes | `low` · `medium` · `high` · `xhigh` · `max` | `routing/effort-calibration.md` |
+| `frontier` | no — absent means off | `steady` · `open` · `max` | `routing/frontier-mode.md` |
+| `model_id` | only when `frontier` is set | free-form: the model as the host names it | `routing/frontier-mode.md` |
+
+**The two FRONTIER attributes (added 2026-09-30, Round 39).** They are optional and only Zachari may cause them to be declared. When `frontier` is present, `active_model` must be `opus-5`, a **stand-in** that keeps this entry's closed set and the core's inline floor rule intact, and the real model travels in `model_id`. **`model_id` is exempt from the closed set below** and is never checked against it; that exemption is the whole reason the attribute exists. Everything else about FRONTIER is canonical in `routing/frontier-mode.md`.
+
+`thinking` is not decoration. The `adaptive-thinking` substrate assumption resolves against **this flag**, not against model identity — Sonnet 5 and Opus 5 both think by default, so the declared flag is the only thing that says whether adaptive thinking is actually on for this session. A capable model declared `thinking="off"` is missing an assumed capability and its compensation must fire. One API coupling constrains which combinations are reachable on Opus 5: disabling thinking is accepted at effort `high` or below and rejected above it (`Proposals/opus-5-release-briefing.md` §1, §3), so `thinking="off" effort="xhigh"` is not a declarable state there.
+
+## The token set — closed at five
+
+| Token | Status |
+| --- | --- |
+| `opus-5` | current |
+| `sonnet-5` | current |
+| `haiku-4.5` | current |
+| `fable-5` | current |
+| `fable-5.1` | current, added 2026-09-14 |
+| `opus-4.6` · `opus-4.8` · `sonnet-4.6` | **retired** — valid only inside an explicitly past-tense statement, never as a current value |
+| `deepseek-v4-pro-max` | **never valid** — an iteration substrate, never a target |
+
+Anything outside the current five is _not_ a declaration. Treat an unrecognized token exactly as an absent one: resolve to the floor and load. **A model outside the five is declared through FRONTIER instead, never by writing its name into `active_model`.** When the host names such a model, the reader offers FRONTIER to Zachari (`routing/frontier-mode.md` §The offer) and holds the floor posture until he answers.
+
+**This table carries no load rules, deliberately.** The position of each model and the load rule attached to it are canonical in `routing/capability-scaffold.md` and appear in exactly one place. This entry owns the _vocabulary_ — which tokens are declarable — because that is a property of the declaration, not of the scaffold. Do not add a load column here to make the entry self-contained. A ladder correction on 2026-09-14 inserted table rows without removing the ones they replaced, and both copies survived in a live file while passing every mechanical check; one copy per fact is the standing answer to that.
+
+## Resolution order
+
+The order is semantic — each step's outcome determines whether the next one runs.
+
+0. **Check for FRONTIER.** If the declaration carries `frontier`, it must have `active_model="opus-5"` and a `model_id`. The stand-in then resolves through steps 1–3 as an ordinary assumed-tier declaration (`never`), and steps 3a, 5 and 6 apply unchanged. A `frontier` value outside `steady`, `open`, `max`, or a missing `model_id`, makes the declaration unresolvable: go to step 4. FRONTIER never adds a skip path of its own; it only reaches the one step 3 already has.
+1. **Read the declaration.** If none is present, or the token is outside the current five, go to step 4.
+2. **Map the token through the ladder** in `routing/capability-scaffold.md`. If the ladder cannot be reached or the token does not resolve against it, go to step 4.
+3. **Apply the matched rule.** `never` → skip. `always` → load the extension whole. `conditionally` → load it whole on the trigger the ladder names for that position. 3a. **Then check the flag-bound assumption separately, whichever way step 3 went.** `adaptive-thinking` resolves against the `thinking` flag, not against `active_model`, so it can be absent at a position whose ladder rule is `never`. Where step 3 skipped and `thinking="off"`, load **only** that assumption's compensation set, addressed by id against the `compensates:` map — not the extension. Where step 3 already loaded the extension whole, the set is already present and this step adds nothing. This is the only place granularity arises, because it is the only assumption that does not resolve through the ladder.
+4. **Resolve to the floor.** The active model is treated as `haiku-4.5` and `capability-scaffold` **loads**. This is a rule, not a disposition: an absent declaration is not "be a bit careful", it is "you are the floor".
+5. **Independently of every step above,** load the scaffold when a task is failing specifically for lack of explicit steps. This trigger applies at every position including the assumed tier, and it is the only one that fires on observed behavior rather than on the declaration.
+6. **Record the path taken** (see below).
+
+**The failure direction is always toward loading, and that is what makes the split safe.** Steps 1, 2 and 4 send every uncertainty — no declaration, an unknown token, an unreachable ladder — to the same place: load. Only step 3 can _skip_ the scaffold, and step 3 runs only on a token that resolved cleanly against the ladder. Step 3a can add a compensation set but never remove one, so granularity does not open a skip path. So the worst outcome of this entry or the ladder being unavailable is a session that is more verbose than it needed to be. There is no path on which a missing file causes a lighter substrate to run unscaffolded. This is why the load rule can live in one knowledge-base entry without putting a safety property behind a file read.
+
+**One window remains open after step 3, and it is not closed by anything here.** `capability-scaffold` is itself a capability, so it inherits the core's rule that an unvetted capability's instructions are not followed without confirmation. A floor-tier substrate can resolve to "always load", attempt the load, and still be running unscaffolded while a first-seen extension waits on a human. That window is covered by the core's bounded core-only floor in `<self_model>`, not by the ladder. Any argument that ends at "the ladder says always load" is one step short.
+
+## The path taken, on the record
+
+The decision is recorded in the capability-discovery output, as the first element:
+
+```text
+<scaffold active_model="opus-5" rule="assumed-tier" loaded="no" />
+```
+
+Three facts: the token read, the ladder rule it matched, and what loaded. Under FRONTIER the record also carries `frontier` and `model_id`, so the stand-in can never be mistaken for a genuine Opus 5 session: `<scaffold active_model="opus-5" frontier="open" model_id="opus-5.5" rule="assumed-tier" loaded="no" />`. Where step 4 fired, `active_model="none"` with the floor rule that replaced it — the _declared_ value and the _resolved_ value must both be legible, or a floor resolution is indistinguishable from a genuine `haiku-4.5` declaration.
+
+**`loaded` takes three kinds of value, because loading is not all-or-nothing (added 2026-09-14, v1.7 D2).** `loaded="no"` — nothing loaded. `loaded="whole"` — the extension loaded entire, which is what step 3's `always` and `conditionally` rules produce. `loaded="adaptive-thinking"`, or a comma-separated list of ids — only the named assumptions' compensation sets loaded, addressed by id against the `compensates:` map in `.agents/prompt-extensions/capability-scaffold.md`. The third case exists because a single assumption can be absent while the ladder says skip: `thinking="off"` makes `adaptive-thinking` absent at any tier including the assumed one, and loading the whole extension there would supply tool manuals and a broad verification trigger to a substrate that has both — the over-verification regression documented in `Proposals/opus-5-release-briefing.md` §A4. Record the set, not merely the fact that something loaded, or the record cannot distinguish the correct narrow load from the over-load.
+
+This is a record, not a parsed interface. Nothing consumes it programmatically today; it exists so that a non-author reviewing a session can see which path was taken instead of inferring it from output verbosity, and so a mechanism gate can check for a named field rather than for a narration habit.
+
+## What this entry does not own
+
+| Fact | Canonical entry |
+| --- | --- |
+| Which position each model holds, and its load rule | `routing/capability-scaffold.md` |
+| Task class → capability tier, and tier → model | `routing/model-selection.md` |
+| Effort levels and adaptive-thinking economics | `routing/effort-calibration.md` |
+| What the scaffold restores once loaded | `routing/capability-scaffold.md`, and the extension body |
+| The assumption vocabulary and the `compensates:` map | `.agents/prompt-extensions/capability-scaffold.md` — authored 2026-09-14 under v1.7 R5. Five terms in two classes: four reasoning terms resolving against `active_model` through the ladder, and `adaptive-thinking` resolving against the `thinking` flag alone. The `requires_host` class is separate again and is specified in `knowledge-base/extensions/authoring.md`. This row previously read "not yet written; do not cite it as existing" — that disclaimer is retired |
+
+## Reading discipline
+
+Read this entry when authoring or auditing a declaration, when writing a gate that validates one, or when a resolution produced a surprising outcome. It is not needed at every session start: the bootstrap sequence carries the one line a reader has to state, and the resolution order is short enough to be stated in core.
+
+## Verification status
+
+Written 2026-09-14 as part of v1.7 task 2.3b, by Daniel Okonkwo. What was checked by inspection: `AGENTS.md:79` carries the declaration in the bootstrap sequence with the actor named; `routing/capability-scaffold.md` and `routing/model-selection.md` agree on all five ladder positions and on the absent-declaration row; the five current tokens appear on disk in both routing entries and in the bootstrap token line. What was **not** checked: no gate has been run against this entry — Gate R does not exist yet as a script — and no session has yet been observed emitting a `<scaffold …/>` record, because the v1.7 build carrying the rule is not assembled. The `thinking`/`effort` coupling on Opus 5 is transcribed from `Proposals/opus-5-release-briefing.md` and has not been exercised against the API from this repository.
+
+**Listed in `knowledge-base/INDEX.md` as of 2026-09-14.** The row was added under convener authorization in v1.7 Wave 2, with the `summary` field above copied byte-exact per INDEX's rule that an entry's one-line summary must match its content; the adjacent migration-status count was corrected from eighteen entries to nineteen in the same edit, because a new row that leaves the neighbouring count stale fails the Document-Truth Audit's _counts agree_ check. Verified after the edit: the INDEX summary and this entry's `summary` field are byte-identical, all nineteen rows resolve on disk, and the row count matches the on-disk entry count.

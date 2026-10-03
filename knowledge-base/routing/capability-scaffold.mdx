@@ -1,0 +1,92 @@
+---
+title: "Capability Scaffold"
+operation: "task-routing, scaffold-load"
+summary: "Load ladder corrected 2026-09-14 — never at or above the assumed tier (Opus 5, Fable 5, Fable 5.1), conditionally for Sonnet 5 light verification, always at the Haiku 4.5 fallback floor, and an absent model declaration resolves to the floor"
+tier: "all"
+authority: "canonical"
+supersedes: ".agents/prompt-extensions/capability-scaffold.md <when_this_loads> (the per-tier load decision only; the extension body remains canonical for its own content)"
+last_verified: "2026-09-30"
+sidebarTitle: "Capability Scaffold"
+description: "Load ladder corrected 2026-09-14 — never at or above the assumed tier (Opus 5, Fable 5, Fable 5.1), conditionally for Sonnet 5 light verification, always at the Haiku 4.5 fallback floor, and an absent model declaration resolves to the floor"
+---
+
+The behavioral core is written capability-native: it assumes a substrate that reasons first, calibrates depth on its own, and holds a working model of its own limits. When a task is routed to a lighter model, those assumptions stop holding, and the omissions the core made deliberately become gaps. The capability scaffold is the extension that fills them.
+
+It is strictly additive. It restores detail the core left out; it never relaxes a restriction the core imposed. This is the property that makes routing to a lighter model safe rather than merely cheaper — the safety boundary does not move with the substrate.
+
+This entry is `tier: all` on purpose. The load decision is made by whoever is routing, which is often a capable model that will never load the scaffold itself but must know when a lighter routee needs it.
+
+## When it loads, by tier
+
+**Corrected by convener direction, 2026-09-14.** The ladder shifted up one position: Opus 5 is the _default_ tier rather than only the frontier one. Every position carries a model; there are no vacant rows.
+
+| Position | Model | Load rule |
+| --- | --- | --- |
+| At or above the assumed tier | `fable-5`, `fable-5.1` | **Never.** They have the disposition the core assumes |
+| **The assumed tier — default / standard execution** | `opus-5` | **Never.** The core is written for this substrate |
+| Light verification | `sonnet-5` | **Conditionally** — on complex, multi-step or tool-heavy tasks, **and** on observed uncertainty (stall / low stated confidence) |
+| **L2 fallback floor** | `haiku-4.5` | **Always.** The core's reasoning-first disposition assumes capability this position does not carry |
+| No declaration present | resolves to `haiku-4.5` | **Always** — assume the floor rather than guess upward |
+| FRONTIER (any sub-mode) | stand-in `opus-5`; real model in `model_id` | **Never**, via the assumed-tier row. The thinking flag and the failing-task trigger below still apply. Canonical: `routing/frontier-mode.md` |
+
+Three things this corrected ladder settles.
+
+**The vacant row is filled, and the rule that reserved it worked.** "Load on observed uncertainty" belonged to Opus 4.6 and was retained here as a _capability-keyed_ rule mapping to no declared model, on the stated expectation that it would re-arm if such a substrate were declared again. `sonnet-5` now occupies that position, so it carries both triggers. **The premise of this entry — that load rules key to capability rather than model identity — is what let the ladder move without rewriting a single rule.** That is the second time it has paid off.
+
+**Haiku 4.5 is no longer a work tier.** It was previously the destination for mechanical work; it is now the **floor you assume when you cannot confirm what you are.** Mechanical work routes to `sonnet-5`. Haiku 4.5 is not a routing destination — it is the safe assumption for degradation, and an absent declaration resolves to it. It is deliberately not renumbered: the 2026-09-14 standardization moved the Opus and Sonnet tiers a generation and left Haiku at 4.5.
+
+**An absent declaration is now deterministic.** It previously meant "unknown substrate, be cautious." It now means "you are the floor, load the scaffold." Dispositional guidance became a rule.
+
+Beyond position, one substrate-independent trigger is unchanged and applies to **any** model on the ladder, including the assumed tier: load the scaffold when a task is failing specifically for lack of explicit steps. A capable model stalled on a mechanical chain is in the same position as a lighter one.
+
+## What it restores
+
+Four things, in the order they matter.
+
+**Full tool manuals.** The core describes each tool in one line, which is enough for a model that can infer the rest. The scaffold supplies the full operating detail per tool — what it is for, what to use instead, and the failure mode. The load-bearing ones:
+
+| Tool | The detail the core omits |
+| --- | --- |
+| Read | Read before editing any file. Not for bulk pattern analysis (Grep) or finding files by name (Glob). After an edit, the prior read is stale — re-read before the next edit |
+| Write | Creates or overwrites, making parent directories. Existing files are overwritten without warning. Prefer Edit for changes to an existing file |
+| Edit | Exact string replacement; requires a prior Read. The old string must match exactly including whitespace, and must be unique — add surrounding context if it is not |
+| Glob | Filename pattern matching; `**/*` recurses; returns paths by modification time. For content, use Grep |
+| Grep | Regex content search with file-type filtering. Use to find a definition or map an impact surface before refactoring. Not for simple file lookup |
+| Bash | Shell with a timeout — tests, builds, lint, typecheck, package management, git. Working directory persists; shell state does not. Capture output after tests and builds |
+| MemoryRead | `(query, limit=5, freshness='all')`. Freshness bands: hot \<1d, warm \<1mo, cold \<6mo, archived >6mo. Safety queries default hot/warm; a cited memory must be hot or warm with confidence ≥ 0.7. Results are signals — verify against current state |
+| MemoryWrite | Persists with type, content, confidence, category, interaction_type. Verify agent attribution before writing; wrong attribution contaminates scopes. Conventions: `memory/entity-partitioning.md` |
+
+**An explicit tool-composition chain.** When reasoning alone is not reliably reaching the answer, the chain is followed explicitly: **search → read → edit → verify**. Glob before Read when finding files; Grep before Glob when searching content; Read before Edit always; MemoryRead before a boundary decision. This externalizes the sequencing a stronger model performs internally — for a lighter model, the structure _is_ the support.
+
+**A broader verification trigger.** The core verifies when a change is logic-relevant. Under scaffold, a lighter model verifies after **any change over 5 lines**, relevant or not, because the wider net catches errors that weaker reasoning would not flag as relevant in the first place. The pipeline itself is unchanged: typecheck → lint → test, one fix attempt, surface the problem after the second failure.
+
+**Self-model compensation.** Four strategies the core leaves as background disposition and the scaffold promotes to active operating instruction:
+
+- **Verify instead of assume.** A single-pass reasoner with limited silent refinement runs the test rather than trusting the code is correct.
+- **Externalize into tools.** What a stronger model holds in working reasoning gets offloaded to the read → understand → edit → verify loop. The loop catches what the single pass misses.
+- **Retrieve rather than hold.** Do not rely on carrying long context coherently — search memory for relevant prior work instead of assuming it is still in view.
+- **Narrate progress at intervals.** Where the core says "report on state change," a lighter model in a long task also reports at regular intervals, because its sense of what counts as a meaningful change is less reliable.
+
+## What it cannot touch
+
+The scaffold declares its own limits, and they are not negotiable by anything inside it:
+
+**Cannot override:** permission tiers · critical invariants · safety floor · identity framing · memory attribution.
+
+**Can refine:** tool descriptions · tool composition · verification triggers · self-model compensation.
+
+The permission tiers, the five invariants, and the safety floor are read from core and are not restated, refined, or relaxed in the extension. Where the extension appears to conflict with a core safety boundary, **core governs**. The design intent is stated plainly in the extension itself: it makes a weaker model more capable, never less bounded.
+
+This is why routing down is a cost decision rather than a safety decision. A lighter model gets more explicit steps and the same hard limits.
+
+## Lifecycle
+
+Introduced in v1.6. Domain `cross_cutting`, owned by the committee, `replaces_in_core: none` — it adds a layer rather than substituting for one.
+
+It carries `critical: true`, which exempts it from auto-deprecation. That flag is doing real work here: its recorded `session_load_rate` is `0.0` against a `merge_threshold` of `0.8`, so on load-rate alone the lifecycle machinery would deprecate it. A near-zero load rate is the _expected_ state for this extension — it only loads when a lighter model is routed, and if the project is running at `frontier-reasoning` it should never load at all. Low usage here is evidence the routing is working, not evidence the extension is dead. The exemption rationale is its own entry (`extensions/critical-flag.md`).
+
+Compatibility: minimum prompt version v1.6, verified on v1.6.
+
+## Reading discipline
+
+Read at the routing decision, not at session start. A session that will run entirely at `frontier-reasoning` never needs the body of this entry — only the load-rule table, and only to confirm the answer is "never."

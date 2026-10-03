@@ -1,0 +1,67 @@
+---
+title: "Content Style"
+operation: "memory-write"
+summary: "Content is knowledge not narration; search-and-reinforce before every write"
+tier: "all"
+authority: "canonical"
+supersedes: "bunnita-operational-knowledge-v1-35.md \\u00a72.2"
+last_verified: "2026-08-07"
+sidebarTitle: "Content Style"
+description: "Content is knowledge not narration; search-and-reinforce before every write"
+---
+
+Two rules govern what goes inside a memory: write knowledge rather than narration, and check for an existing memory before creating a new one. The first protects retrieval quality; the second protects the retrieval budget. Both were learned by watching the graph degrade without them.
+
+## Knowledge, not narration
+
+The Platform may rewrite memory content with "User..." narration. Don't fight this - the semantic content is what matters. The `[tag]` prefix survives Platform processing and makes content searchable regardless of narration wrapper.
+
+**What to write:**
+
+```text
+[capability] Isabella designed the three-tier permission model. Freely available, confirm first, never perform. Tier determination uses worst-case-outcome scoring.
+```
+
+**What NOT to write (v0.1 verbose wrapper):**
+
+```text
+User states that Isabella Marchetti has established a capability for designing the three-tier permission model which consists of...
+```
+
+The content IS the knowledge. The `[tag]` IS the retrieval key. Stating that a fact was stated adds a clause and no information; the Platform will add that clause itself if it wants one.
+
+## Dedup before write
+
+Before writing any memory:
+
+1. Search for semantically similar existing memories using the same category and interaction_type.
+2. If a match is found with confidence >= 0.7, reinforce the existing memory - update its timestamp (and thus its staleness score) instead of creating a new one.
+3. If the existing memory's content differs meaningfully from what you'd write, append your new observation to the existing memory rather than overwriting. Pattern: `"Update: \{new_observation\}. context: \{situation_that_changed\}."`
+4. If no match is found, create a new memory normally.
+
+This prevents the graph from accumulating near-duplicate memories that compete for retrieval budget.
+
+The search step uses read-scope rules, not write-scope rules - see `memory/entity-partitioning.md`. The write that follows carries all four identifiers.
+
+## What to remember, what to discard
+
+Persist: user preferences that change your behavior, project decisions that aren't in the code, feedback that corrects your approach, reference pointers to external resources, capability metadata (which agents work, which don't).
+
+Discard: code patterns derivable from the codebase, git-derivable history, one-time task details, anything documented in project READMEs or AGENTS.md files.
+
+The test, when unsure: _"Will this change how I approach the next session?"_ If yes, persist. If no, don't. Never save code patterns or git-derivable facts. Be selective - memory compounds, it shouldn't bloat.
+
+## Citation threshold
+
+A memory that shapes a response is cited briefly. Cited memories must be hot or warm with confidence >= 0.7 - a cold or low-confidence memory may still inform your thinking but must not be presented to the user as established. Results are signals, not facts; verify against current state before citing.
+
+## Contested
+
+The dedup threshold appears with two different values, applied to two different moments. Neither source acknowledges the other, so both are recorded here rather than reconciled.
+
+- **Claim A - write-time gate at 0.7.** "If found with confidence >= 0.7, reinforce the existing memory (update its timestamp) instead of creating a duplicate." Sources: `Builds/bunnita-system-prompt-v1-3.md` (`<memory_discipline>`), `Builds/bunnita-system-prompt-v1-5.md`, `.agents/prompt-extensions/memory-advanced.md` (`<dedup_algorithm>` step 2).
+- **Claim B - audit-time merge at 0.8 similarity.** "Memories with semantically identical content (confidence >= 0.8 similarity)" are the merge candidates in the Deduplication Scan; merge protocol keeps the highest-confidence memory, folds in additional information from the duplicates, deletes the duplicates, and logs `[process] Deduplicated \{count\} memories on \{topic\}.` Source: `.agents/skills/bunnita-memory-hygiene/SKILL.md \u00a75`.
+
+The two may be intentionally different operations - a permissive write-time gate and a stricter audit-time merge test - but the sources use the same phrase (`confidence >= N`) for what are arguably different quantities (memory confidence vs. semantic similarity), so the distinction is not established by the text.
+
+A separate, unratified critique holds that 0.7 is too loose at scale: "At 1000 sessions, slightly different phrasings of the same concept might sit at 0.65 confidence-below the threshold but semantically redundant" (`Builds/bunnita-opus-4.6-analysis-report-2026-06-18.md \u00a76`). This is a recommendation, not a rule; 0.7 remains the write-time gate until a ratified proposal changes it.

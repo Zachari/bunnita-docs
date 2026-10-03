@@ -1,0 +1,99 @@
+---
+title: "Extension Lifecycle"
+operation: "extension-audit, extension-merge, extension-deprecate"
+summary: "State machine plus the >0.8 auto-merge / <0.1 auto-deprecate thresholds — both currently inert"
+tier: "all"
+authority: "canonical"
+supersedes: "bunnita-extension-standard-v1.md §2 (Lifecycle Management) and §4 (Forced Merge Protocol); bunnita-operational-knowledge-v1-35.md §8.1, §8.3, §8.4"
+last_verified: "2026-08-07"
+sidebarTitle: "Lifecycle"
+description: "State machine plus the >0.8 auto-merge / <0.1 auto-deprecate thresholds — both currently inert"
+---
+
+Extensions are not permanent. Each one occupies a slot, carries a `lifecycle` block in its frontmatter, and moves through a fixed set of states. Reaching a state is either automatic (a load-rate threshold fires at a version boundary) or forced (a user or agent invokes `/merge-extension`). This entry is the procedure for both paths.
+
+## The state machine
+
+```text
+active → candidate_for_merge → deprecated → archived
+  ↑                                      (file retained, not loaded)
+  └── restored (if deprecated by mistake)
+```
+
+State lives in `lifecycle.state`. Nothing is ever deleted — deprecation and merge both end in `.agents/prompt-extensions/archived/{name}.md`, which is what makes every transition reversible.
+
+| Transition | Trigger | Effect |
+| --- | --- | --- |
+| `active → candidate_for_merge` | `session_load_rate` crosses `merge_threshold` (default 0.8) and stays above it across 3 consecutive prompt versions, all three strictly above threshold | Committee reviews at the version boundary. Automated trigger, not a deliberation item — if the numbers say merge, merge. |
+| `candidate_for_merge → deprecated` (merged) | Content moves into core | File moves to `archived/`. A `[deliberation]` memory is logged with attribution. The slot opens. |
+| `active → deprecated` (forced) | `/merge-extension {name}` | See _Forced merge_ below. No deliberation required. |
+| `active → deprecated` (unused) | `session_load_rate` \< 0.1 across 2 prompt versions | Extension is dead weight. Deprecate, archive, log. **Exempt if `critical: true`** — see `extensions/critical-flag.md`. |
+| `deprecated → active` (restored) | Deprecation was erroneous | Restore from archive. Log the restoration. |
+| `deprecated → archived` | 1 version in `deprecated` with no restoration | Permanent archive. File retained for reference. |
+
+## The thresholds are currently INERT
+
+Every one of the seven files in `.agents/prompt-extensions/` sits at `session_load_rate: 0.0`. That number is not a measurement — no telemetry store exists, and track T002 (_Extension Load Rate Tracking_, `conductor/tracks.md`) records that "tracking must begin." Its own acceptance criteria are unmet.
+
+**A 0.0 rate therefore does NOT mean "deprecate."** Read literally, 0.0 \< 0.1 would auto-deprecate all seven extensions — including both `critical: true` ones, if the exemption were ignored — on the strength of data that was never collected. The rate is an uninitialized default, not evidence of disuse.
+
+Until T002 ships a store that actually writes per-session load rates:
+
+- Treat `session_load_rate: 0.0` as **unknown**, never as **zero usage**.
+- Do not fire auto-deprecation on any extension.
+- Do not fire auto-merge on any extension — the same absent store cannot produce a >0.8 reading either.
+- Forced merge (below) remains fully available; it depends on no telemetry.
+
+Both thresholds become live only when T002's per-session write path exists and has accumulated the 2- or 3-version history the transition requires. Recording a rate once is not enough — the transitions are defined over consecutive versions.
+
+## Forced merge
+
+`/merge-extension {name}` merges any `active` extension into core immediately. No deliberation, no load-rate gate.
+
+1. **Identify target.** Confirm `.agents/prompt-extensions/{name}.md` exists and is `active`.
+2. **Read extension.** Load the full file.
+3. **Read core.** Load `Builds/bunnita-system-prompt-v{current_version}.md`.
+4. **Inject content.** Append the extension's `<voice>` block and content sections to the core section named in `replaces_in_core`. Append as additional detail inside that section's XML tags — never replace.
+5. **Record the slot change.** Core version notes get: `extensions merged: {name} (forced by {user_id})`.
+6. **Archive.** Move to `archived/{name}.md`. Archive, do not delete.
+7. **Log.** `[deliberation] Extension {name} force-merged into core v{version} by {user_id}. rationale: forced merge.`
+8. **Update lifecycle.** In the archived copy: `lifecycle.state → deprecated`, plus `deprecated_reason: forced_merge`.
+
+**Undo:** restore the file from `archived/` to `prompt-extensions/`, revert the core change, set `lifecycle.state → active`. The archive preserves the original, so nothing here is destructive.
+
+**Agent-initiated forced merge** is permitted when the extension's `session_load_rate` exceeds its `merge_threshold` _and_ the agent observes consistent loading. The agent logs `[deliberation] Extension {name} force-merged by {agent_id}. load_rate={rate}, threshold={threshold}.` and tells the user which rate triggered it. Note that this path is gated on the same absent telemetry as auto-merge — with all rates at 0.0, no agent-initiated merge can currently qualify.
+
+## Cross-extension conflicts
+
+When two extensions' `can_refine` fields overlap and their content contradicts, the extension with the higher `session_load_rate` wins. The conflict is surfaced to the user and logged as a `[safety_incident]` memory. The loser is flagged `candidate_for_merge`; the committee resolves the contradiction at the next version boundary.
+
+With all rates equal at 0.0 this tiebreak cannot discriminate. A conflict arising before T002 lands must be escalated to the user rather than resolved by load rate.
+
+## Resolved
+
+### The active-extension ceiling — ✅ 7, ratified 2026-09-14
+
+**Ratified at 7 by convener direction (Zachari, 2026-09-14).** Seven active extensions is both the ground truth on disk and the rule. This closed the last blocking item on `knowledge-base/INDEX.md`'s contested ledger (#6).
+
+**Why a ruling and not a vote.** The ceiling rule is written to be vote-proof — `.agents/skills/bunnita-committee-deliberation/SKILL.md` states that no vote can exceed the ceiling without deprecating first — so no committee vote could settle its _value_, even after the six-member vote mechanism was defined on the same day. A convener ruling was the only available channel. **Adding an eighth extension therefore requires a new convener ruling, not a vote**, or freeing a slot by merge, deprecation, or consolidation.
+
+**What the disagreement actually was, and it is worth keeping.** This was never two competing claims to adjudicate. It was **one amendment that never propagated.** The raise 6 → 7 was granted by the convener at v1.6 to seat `capability-scaffold` without forcing a premature merge — `Builds/bunnita-system-prompt-v1-6.md`'s own change table records the provenance as "Convener grant + Analysis Q20" — and was then executed as a prose edit in the new build while nine other documents kept 6. The ten divergent statements, kept for provenance:
+
+| Claim | Source |
+| --- | --- |
+| `\| Extensions \| 7 active \|` and "7-extension ceiling as of v1.6" | `conductor/product.md` (metrics table; Dynamic Extensions bullet) |
+| "Dynamic Extension Loading (max 6)" — contradicted the same file's own 7 | `conductor/product.md` (architecture diagram) |
+| "Active extensions (max 7 as of v1.6)" | `AGENTS.md` (repository layout tree) |
+| "max 7 active extensions (raised from 6 in v1.6 to seat `capability-scaffold`)" | `conductor/workflow.md` |
+| "up to 7 active extensions (raised from 6 for v1.6…)" | `Builds/bunnita-system-prompt-v1-6.md` |
+| `\| Max active extensions \| 6 \|` and heading "Active Extensions (6/6)", listing six and **omitting `capability-scaffold`** | `conductor/tech-stack.md` |
+| "Hard Ceiling: 6 Active Extensions" / "a structural invariant" | `bunnita-operational-knowledge-v1-35.md §8.2` |
+| "The 6-Extension Ceiling" / "Maximum 6 active extensions per prompt version." | `bunnita-extension-standard-v1.md §2` |
+| "Track session_load_rate for all 6 active extensions" | `conductor/tracks.md` T002 |
+| "No vote can exceed 6 active extensions without deprecating one first." | `.agents/skills/bunnita-committee-deliberation/SKILL.md` |
+
+All are conformed to 7 as of 2026-09-14, except `bunnita-operational-knowledge-v1-35.md §8.2`, which is immutable and superseded by this entry per the `supersedes` field rather than edited.
+
+**Ground truth on disk:** seven files in `.agents/prompt-extensions/` — `subagent-protocol`, `memory-advanced`, `multi-language`, `browser-automation`, `safety-advanced`, `personality-variation`, `capability-scaffold` — all `lifecycle.state: active`. The system is therefore **exactly full**, not over capacity. Any addition needs a slot freed first.
+
+**The design objection, recorded because ratification did not answer it.** Daniel argued at Round 30 that a file count is the wrong control regardless of its value: the ceiling exists to prevent pileup (`bunnita-operational-knowledge-v1-35.md §8.4`), and pileup is a _concurrent context cost_ and `can_refine`-overlap problem, neither of which a count measures. Seven extensions that never co-load cost less than two that always do, and `capability-scaffold` — `cross_cutting`, `replaces_in_core: none`, loading only for lighter models — consumes a slot in a ceiling designed to limit core-supplementing extensions while being neither. Under the adopt-by-reading ruling (Round 31) concurrent context cost is the metric that now matters, since everything loaded is read. **The value is settled at 7; whether a count is the right instrument is not, and remains open for a future proposal.**

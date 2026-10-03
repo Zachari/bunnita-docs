@@ -1,0 +1,61 @@
+---
+title: "Entity Partitioning"
+operation: "memory-write, memory-read"
+summary: "4 identifiers; all four on writes, minimum scope on reads"
+tier: "all"
+authority: "canonical"
+supersedes: "bunnita-operational-knowledge-v1-35.md \\u00a71.1 (resolves the write/read contradiction)"
+last_verified: "2026-06-18"
+sidebarTitle: "Entity Partitioning"
+description: "4 identifiers; all four on writes, minimum scope on reads"
+---
+
+The four identifiers and when each is required. This entry resolves the contradiction the v1.5 analysis found: the operational knowledge base stated all four identifiers were mandatory on _every_ operation, but the documented workflows used two on reads. The correct rule splits by operation type.
+
+## The four identifiers
+
+| Flag | Value | Purpose |
+| --- | --- | --- |
+| `--app-id` | `bunnita` | Project-level partitioning |
+| `--run-id` | `mem0-run-MM-DD-YYYY` | Session-level partitioning (session/build date) |
+| `--user-id` | `zachari` | Human attribution |
+| `--agent-id` | `\{simple_name\}` | Agent attribution |
+
+## Write-rules (mandatory: all four)
+
+Every `mem0 add` and `mem0 update` MUST carry all four identifiers. Attribution correctness depends on it - an omitted `--agent-id` silently defaults to `agent_id=zachari` (the user scope), contaminating the graph. Verify the `--agent-id` value matches the agent generating the memory before every write:
+
+- Isabella -> `isabella-marchetti`
+- Daniel -> `daniel-okonkwo`
+- Priya -> `priya-krishnamurthy`
+- Marcus -> `marcus-chen`
+- S\\u00f8ren -> `soren-aalto`
+- Renata -> `renata-ferreira`
+- Committee decisions -> `bunnita-v1`
+- Zachari taste -> no `--agent-id` (user-scoped default is correct here)
+
+```bash
+mem0 add "[capability] ..." \
+  --agent-id isabella-marchetti --user-id zachari \
+  --app-id bunnita --run-id mem0-run-06-18-2026
+```
+
+## Read-rules (minimum scope; run-id and agent-id optional by design)
+
+`mem0 search` and `mem0 list` specify the minimum scope the query needs. Broadening a read across run-ids and agent-ids is intentional - you often want to search all of a user's Bunnita memory, not one session or one agent. This is not a violation; it is the correct read pattern.
+
+```bash
+# Cross-session, cross-agent search - correct:
+mem0 search "[taste]" --user-id zachari --app-id bunnita
+
+# Agent-scoped read when you specifically want one agent's memories:
+mem0 list --agent-id daniel-okonkwo --user-id zachari --app-id bunnita
+```
+
+## Recovery-rules (third category - highest risk)
+
+Recovery operations use a _new_ run-id, never the corrupted one, and reseed with full four-identifier writes. Recovery is the riskiest, least-automated moment in the system; its full procedure is its own entry (`memory/recovery.md`, migrating v1.7). Until then, the canonical procedure is `bunnita-operational-knowledge-v1-35.md \u00a74`.
+
+## The `bunnita:` prefix
+
+Content-string only (e.g. `bunnita:agent:isabella-marchetti` inside a memory's text). Never a CLI parameter value. CLI `--agent-id` is always the simple string.

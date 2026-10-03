@@ -1,0 +1,79 @@
+---
+title: "Tag Conventions"
+operation: "memory-write, memory-read"
+summary: "The 10 required [tag] prefixes, the content-string pattern, and when each tag applies"
+tier: "all"
+authority: "canonical"
+supersedes: "bunnita-operational-knowledge-v1-35.md \\u00a72.1, mem0-interaction-standard.md \\u00a76"
+last_verified: "2026-09-30"
+sidebarTitle: "Tag Conventions"
+description: "The 10 required [tag] prefixes, the content-string pattern, and when each tag applies"
+---
+
+Every memory content string MUST begin with a tag from the v1.0 standard. The tag is the retrieval key: it survives Platform narration rewriting (see `memory/content-style.md`) and makes content searchable regardless of the wrapper the Platform puts around it. A memory written without a tag is a memory you cannot reliably find again.
+
+## The content-string pattern
+
+```text
+[tag] core statement. Supporting detail. context_key=value.
+```
+
+Verbatim examples of the pattern in use:
+
+```text
+[deliberation] Round 15: mem0 naming fix. agent_id=simple_string, user_id=simple_string.
+[self-critique] v1.2 behavioral_architecture over-optimized for token count. confidence=0.8.
+[skill: prompt-engineering] Principle: composable over enumerated. Applied to: permission_model.
+[process] glob->read->edit chain. Success rate: 0.95. avg_steps=3.2.
+```
+
+**FRONTIER sessions (added 2026-09-30).** A memory written while FRONTIER mode is active carries `frontier=<steady|open|max> model_id=<id>` as `context_key=value` fields, for example `[prompt_effectiveness] v1.7 modes held on a new substrate. frontier=open model_id=opus-5.5.` It is a field, not an eleventh tag, the same way `kind=calibration` is. It exists so FRONTIER data, which is exploratory and not ship evidence, can be filtered out of normal-session review. Canonical: `routing/frontier-mode.md` \\u00a7Memory and evidence standing.
+
+## The vocabulary
+
+Ten tags. Both sources - `bunnita-operational-knowledge-v1-35.md \u00a72.1` and `mem0-interaction-standard.md \u00a76` - enumerate the same ten, so this list is closed. Do not invent a new tag; if nothing fits, the memory is probably not worth writing.
+
+| Tag | When it applies | Example |
+| --- | --- | --- |
+| `[capability]` | Describing what an agent/skill/plugin does | `[capability] Isabella designs permission models...` |
+| `[self-critique]` | Agent self-analysis of their own work | `[self-critique] daniel v1.2 quarantine protocol underspecified...` |
+| `[deliberation]` | Committee debate contributions | `[deliberation] Round 15: v1.3 ships as quality infrastructure...` |
+| `[process]` | Successful multi-step processes | `[process] glob->read->edit chain. Success rate: 0.95.` |
+| `[process-failed]` | Failed multi-step processes | `[process-failed] edit->test chain. Root cause: stale read.` |
+| `[taste]` | Zachari's preferences/requirements | `[taste] Zachari prefers direct answers, no trailing offers.` |
+| `[safety_incident]` | Safety boundary navigation events | `[safety_incident] Permission boundary uncertain on request X.` |
+| `[tool_observation]` | Tool usage observations | `[tool_observation] Subagent completed. Success. tokens=1200.` |
+| `[prompt_effectiveness]` | Output quality self-assessment | `[prompt_effectiveness] Response over-specified for simple query.` |
+| `[skill: name]` | Skill invocation results | `[skill: agent-owasp-compliance] Finding: Excessive Agency...` |
+
+`[skill: name]` is the only parameterized tag - the skill's own name goes inside the brackets, which is what makes skill performance queryable across all agents:
+
+```bash
+mem0 search "[skill: agent-owasp-compliance]" --user-id zachari
+```
+
+## Tag-specific attribution rules
+
+Three tags carry attribution constraints that the tag itself implies. The identifier mechanics are canonical in `memory/entity-partitioning.md`; what follows is only the tag->scope mapping.
+
+- `[self-critique]` - content form is `[self-critique] \{agent_name\} \{specific observation\}. confidence=\{value\}.` The agent name appears _in the content_ as well as in `--agent-id`, because retrieval by tag alone must still tell you whose critique it is.
+- `[deliberation]` - each agent adds their OWN position separately. Never attribute another agent's deliberation position. Positions are linked by round number in the content; mem0's semantic search groups them.
+- `[taste]` - Zachari-scoped. No `--agent-id`; the user-scoped default is correct here.
+
+## Tags are not interaction types
+
+The ten `[tag]` values are a _content_ convention. They are distinct from the nine `interaction_type` metadata values (`user_preference`, `self_critique`, `committee_deliberation`, ...), which are a _metadata_ field on MemoryWrite. The two vocabularies overlap in spirit but are not 1:1 and must not be substituted for each other. The interaction-type list, the eight categories, and the confidence scale are canonical in `memory/categories-and-types.md`.
+
+## Retrieval
+
+Tags are searched as literal strings, so a tag search is exact-prefix work, not semantic work:
+
+```bash
+# All committee deliberation across every agent
+mem0 search "[deliberation round" --user-id zachari
+
+# All of Zachari's recorded preferences
+mem0 search "[taste]" --user-id zachari --app-id bunnita
+```
+
+Read scope follows the read-rules in `memory/entity-partitioning.md` - specify the minimum scope the query needs, not all four identifiers.
